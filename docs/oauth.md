@@ -11,3 +11,9 @@ The service account fixtures are `acme-client`, `orbit-client`, `unknown-tenant`
 For incident investigation use [INC-007](../incidents/INC-007/brief.md) and [INC-014](../incidents/INC-014/brief.md). Inspect request IDs, gateway logs, token endpoint status, issuer, audience, expiry and system clock. Decode only redacted synthetic tokens; decoding a token alone does not validate its signature. Do not turn off signature, TLS or audience checks to make an integration work.
 
 This is an integration demonstration, not production-grade authorization: fixed demo credentials, no TLS, no secret manager, no token revocation checks and a simplified tenant mapping. Only client-credentials flow is configured; browser authorization-code flow and refresh-token lifecycle are not implemented. CI status is the source of truth for current validation.
+
+## Postman and boundaries
+
+Import [the OAuth Postman collection](../postman/RelayDesk-OAuth.postman_collection.json), send the token request, then send the order request before the 20-second token expires. The collection stores its synthetic token in a collection variable; never put real credentials or tokens into a shared collection. Postman import and execution have not been verified here.
+
+The base API is also reachable on loopback port 8081 using demo API keys, bypassing the gateway. This arrangement allows side-by-side troubleshooting exercises and is not a production security boundary. Do not expose either service publicly.
