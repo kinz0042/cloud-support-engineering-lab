@@ -155,6 +155,14 @@ class RelayTests(unittest.TestCase):
         self.assertEqual(status, 401)
         self.assertEqual(response["error"], "invalid_signature")
 
+    def test_invalid_callback_headers_are_rejected(self):
+        body = json.dumps({"event_id": "evt-invalid", "order_id": str(uuid.uuid4())}).encode()
+        for timestamp, signature in [("9" * 100, "abcd"), (str(int(time.time())), "é")]:
+            with self.subTest(timestamp=timestamp, signature=signature):
+                status, _, _ = self.call("/v1/callbacks", "POST", body,
+                                         {"X-Relay-Timestamp": timestamp, "X-Relay-Signature": signature})
+                self.assertEqual(status, 401)
+
     def test_partner_rejects_bad_signature_and_deduplicates(self):
         partner = make_partner(0, "test-secret", "normal")
         thread = threading.Thread(target=partner.serve_forever, daemon=True)
