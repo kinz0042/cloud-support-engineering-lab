@@ -40,6 +40,6 @@ Prepare remote-work reliability: power/internet backup, quiet call space and agr
 
 ## Current checkpoint
 
-Foundation code created by assistant and published to this repository. Learner has not yet run or explained it; no learner incident is certified complete. The short learner outline is in [Start here](start-here.md).
+The RelayDesk Docker/PostgreSQL profile, worker, partner simulator and incident briefs are published. Local HTTP tests pass; Docker/PostgreSQL startup is unverified in the authoring workspace. Learner has not yet investigated or explained the system; no learner incident is certified complete. The short outline is in [Start here](start-here.md).
 
-Next learner task: verify current computer and OS before installation, then collect INC-001 observations. Keep setup separate from assessment. No paid tools or AWS required now.
+Next engineering gate: run the Docker profile in a Docker-capable environment, record startup evidence and repair any integration defects before counting the database and webhook incidents as verified. No paid tools or AWS required.

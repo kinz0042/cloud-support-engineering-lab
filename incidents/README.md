@@ -4,9 +4,9 @@
 |---|---|---|---|
 | INC-001 | Order sync receives 401 while health is green | Runnable; learner investigation pending | Redacted HTTP responses, correlated logs, hypothesis tests |
 | INC-002 | Order listing returns 500 while liveness is green | Runnable; learner investigation pending | Correlated request log, readiness comparison, recovery and regression check |
-| INC-003 | Database connection refused | Planned | DNS/port/config tests and database health |
-| INC-004 | Webhook missed after timeout | Planned | Sender/receiver logs and delivery attempts |
-| INC-005 | Duplicate events create duplicate orders | Planned | Event IDs and idempotency test |
+| INC-003 | Database connection refused | Docker drill; integration unverified | DNS/port/config tests and database health |
+| INC-004 | Partner rejects webhook delivery | Docker drill; integration unverified | Sender/receiver logs and delivery attempts |
+| INC-005 | Duplicate signed callback | Docker drill; integration unverified | Event IDs and idempotency test |
 | INC-006 | Queries become slow with growing data | Planned | EXPLAIN ANALYZE before/after and dataset size |
 | INC-007 | OAuth refresh fails / JWT rejected | Planned | Redacted claims, clock/issuer/audience/signature checks |
 | INC-008 | Container cannot reach database | Planned | Network inspection and service-name resolution |

@@ -12,6 +12,6 @@ This is a career project, not a course completion checklist. Progress depends on
 
 The [full roadmap](roadmap.md) records the details. We do one learner task at a time. AI-generated scaffold is not counted as your own troubleshooting evidence.
 
-## Your next task
+## Current build status
 
-Confirm the computer you will use: is it still the Dell XPS 13 running Windows, and can you open it now? We verify the actual OS, Python and Git before installing anything. Then we run INC-001 and collect your observations. There is no need to fix VirtualBox for this first lab.
+The assistant is building the lab. The learner walkthrough begins after the Docker/PostgreSQL profile is verified. VirtualBox is not required for the first lab.

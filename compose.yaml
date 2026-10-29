@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: relaydesk
+      POSTGRES_USER: lab
+      POSTGRES_PASSWORD: ${LAB_DB_PASSWORD:-local-only-change-me}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lab -d relaydesk"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  api:
+    build: .
+    command: ["python", "-m", "app.relay_api"]
+    environment:
+      DATABASE_URL: postgresql://lab:${LAB_DB_PASSWORD:-local-only-change-me}@db:5432/relaydesk
+      LAB_TENANT_KEYS: '{"acme":"acme-local-key","orbit":"orbit-local-key"}'
+      LAB_WEBHOOK_SECRET: ${LAB_WEBHOOK_SECRET:-local-only-webhook-secret}
+    ports:
+      - "127.0.0.1:8081:8081"
+    depends_on:
+      db:
+        condition: service_healthy
+  partner:
+    build: .
+    command: ["python", "-m", "app.partner"]
+    environment:
+      LAB_WEBHOOK_SECRET: ${LAB_WEBHOOK_SECRET:-local-only-webhook-secret}
+      LAB_PARTNER_MODE: ${LAB_PARTNER_MODE:-normal}
+    depends_on:
+      db:
+        condition: service_healthy
+  worker:
+    build: .
+    command: ["python", "-m", "app.worker"]
+    environment:
+      DATABASE_URL: postgresql://lab:${LAB_DB_PASSWORD:-local-only-change-me}@db:5432/relaydesk
+      LAB_WEBHOOK_SECRET: ${LAB_WEBHOOK_SECRET:-local-only-webhook-secret}
+      LAB_PARTNER_URL: http://partner:8082/webhook
+    depends_on:
+      db:
+        condition: service_healthy
+      partner:
+        condition: service_started
+volumes:
+  pg_data:
