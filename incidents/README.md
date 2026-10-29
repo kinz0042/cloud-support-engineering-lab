@@ -15,6 +15,7 @@
 | INC-011 | Security group blocks application traffic | Planned | Flow/path tests and narrowly scoped rule change |
 | INC-012 | Partner rate limits delivery | Docker drill; integration unverified | Retry-After, bounded retries, recovery test |
 
+| INC-013 | Database readiness alert | Monitoring drill implemented; live alert test pending | Gauge, alert state, logs and recovery evidence |
+
 Planned incidents are not implemented or completed. Severity depends on demonstrated impact, not status code alone.
 
-| INC-013 | Database readiness alert | Monitoring drill implemented; live alert test pending | Gauge, alert state, logs and recovery evidence |
