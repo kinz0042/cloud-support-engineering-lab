@@ -20,12 +20,7 @@ flowchart TD
 The API writes an order and an outbox record to PostgreSQL. The worker reads the outbox and sends signed events to the mock partner. A separate signed callback endpoint can be exercised with the callback script. Prometheus scrapes API metrics; API, worker and partner emit logs. The current implementation has no reverse proxy, TLS termination or distributed tracing.
 
 
-Next delivery order:
-1. Extend the verified Compose and PostgreSQL drills with network/TLS and auth-expiry scenarios.
-2. Add realistic webhook recovery and durable mock-partner deduplication.
-3. External standards-based OAuth/OIDC provider in an optional profile; JWT issuer/audience/expiry/signature checks.
-4. Metrics dashboard, external notification and trace correlation. Add a tiny support UI only when it makes an investigation clearer.
-5. AWS variant: IAM, private S3, EC2, security groups, CloudWatch; infrastructure code and teardown verification.
+Remaining work includes durable mock-partner deduplication, richer telemetry, and a real AWS sandbox deployment with teardown verification. Local OAuth, network diagnostics, token-expiry and webhook-recovery checks are already implemented. These simulations do not establish AWS experience or learner competence.
 
 Decisions: Python first to read and automate investigations. SQL receives substantial practice. Basic JavaScript/DevTools later for customer integration reproduction; React and Kubernetes await stronger role-specific evidence. Local default, lightweight optional services, no always-on cloud bill.
 
