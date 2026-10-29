@@ -40,6 +40,6 @@ Prepare remote-work reliability: power/internet backup, quiet call space and agr
 
 ## Current checkpoint
 
-Foundation code created by assistant; learner has not yet run or explained it. GitHub authenticated as kinz0042; all-repository installation exists but lists zero accessible repositories. Repository creation unavailable in connector; browser requires separate sign-in. No GitHub publication claimed.
+Foundation code created by assistant and published to this repository. Learner has not yet run or explained it; no learner incident is certified complete. The short learner outline is in [Start here](start-here.md).
 
 Next learner task: verify current computer and OS before installation, then collect INC-001 observations. Keep setup separate from assessment. No paid tools or AWS required now.
