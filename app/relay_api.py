@@ -42,9 +42,9 @@ class Handler(BaseHTTPRequestHandler):
         if status == 401:
             self.send_header("WWW-Authenticate", 'Bearer realm="relaydesk"')
         self.end_headers()
-        self.wfile.write(data)
         LOG.info(json.dumps({"event": "request_completed", "request_id": request_id,
                              "route": route, "status": status, "reason": reason}))
+        self.wfile.write(data)
 
     def body_json(self):
         length = self.headers.get("Content-Length", "")
@@ -81,12 +81,12 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 raw, body = self.body_json()
                 timestamp = self.headers.get("X-Relay-Timestamp", "")
-                if not timestamp.isdigit() or abs(time.time() - int(timestamp)) > 300:
+                if not timestamp.isascii() or not timestamp.isdigit() or len(timestamp) > 12 or abs(time.time() - int(timestamp)) > 300:
                     return self.reply(401, {"error": "invalid_signature"}, request_id, route, "stale_callback")
                 digest = hmac.new(self.server.webhook_secret.encode(), timestamp.encode() + b"." + raw,
                                   hashlib.sha256).hexdigest()
                 signature = self.headers.get("X-Relay-Signature", "")
-                if not hmac.compare_digest(signature, digest):
+                if not hmac.compare_digest(signature.encode(), digest.encode()):
                     return self.reply(401, {"error": "invalid_signature"}, request_id, route, "bad_signature")
                 event_id, order_id = body["event_id"], body["order_id"]
                 if not isinstance(event_id, str) or not 1 <= len(event_id) <= 100:
