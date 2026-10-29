@@ -6,4 +6,4 @@ Environment: disposable RelayDesk PostgreSQL database. The script `sql/slow_orde
 
 Investigate selectivity, existing indexes, write overhead, and whether the improvement applies to the customer's real query. Consider a rollback plan before creating an index in a real system; this lab index can be removed with `DROP INDEX orders_tenant_status_lab_idx`. The script changes lab data and is safe only for disposable environments. Synthetic rows do not create delivery records. Fill in the investigation template and provide a customer update and engineering handoff.
 
-Status: authored drill; full PostgreSQL execution pending CI validation. This is a simulated scenario, not a real customer case.
+Status: verified against PostgreSQL in CI; learner investigation pending. This is a simulated scenario, not a real customer case.
