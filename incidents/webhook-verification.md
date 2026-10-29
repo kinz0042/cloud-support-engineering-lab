@@ -14,3 +14,5 @@ The [Compose CI run](https://github.com/kinz0042/cloud-support-engineering-lab/a
 **Internal handoff:** Include event and delivery IDs, request timestamps, HTTP status, retry attempts, any Retry-After value, recipient behavior, and whether processing may have occurred despite an ambiguous response. Redact tokens and signatures. No customer message was sent.
 
 **Limits:** That earlier recovery test verifies recovery before retry exhaustion, not dead-letter replay or partner side effects. A separate [Compose check](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/40967292258) passed persistent partner deduplication across container recreation. The standalone in-memory partner mode still loses event IDs on restart. A real case requires impact, severity, independent evidence, safe remediation, validation and preventive action.
+
+Exhausted-delivery recovery is now implemented separately in [INC-015](INC-015/brief.md), with [its own PostgreSQL and Compose verification](INC-015/verification.md). That newer result does not change the scope of the earlier recovery test above.

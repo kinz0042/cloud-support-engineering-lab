@@ -18,4 +18,4 @@ The simulated root cause is retry exhaustion while the partner was rejecting req
 
 ## Verification status
 
-Implemented with PostgreSQL integration and Compose smoke tests. CI verification is pending for this change. The smoke test is `scripts/dead_letter_smoke.py`; a passing replay request alone is not an end-to-end result. Learner investigation remains pending.
+Verified in [PostgreSQL integration CI](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/40968410297) and the [full Compose workflow](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/40968410228). See [verification details](verification.md). The smoke test is `scripts/dead_letter_smoke.py`; a passing replay request alone is not an end-to-end result. Learner investigation remains pending.
