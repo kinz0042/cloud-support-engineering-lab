@@ -25,12 +25,12 @@ class Handler(BaseHTTPRequestHandler):
             return
         raw = self.rfile.read(int(length))
         timestamp = self.headers.get("X-Relay-Timestamp", "")
-        if not timestamp.isdigit() or abs(time.time() - int(timestamp)) > 300:
+        if not timestamp.isascii() or not timestamp.isdigit() or len(timestamp) > 12 or abs(time.time() - int(timestamp)) > 300:
             self.send_error(401)
             return
         expected = hmac.new(self.server.secret.encode(), timestamp.encode() + b"." + raw,
                             hashlib.sha256).hexdigest()
-        if not hmac.compare_digest(self.headers.get("X-Relay-Signature", ""), expected):
+        if not hmac.compare_digest(self.headers.get("X-Relay-Signature", "").encode(), expected.encode()):
             self.send_error(401)
             return
         try:
