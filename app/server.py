@@ -59,9 +59,9 @@ class Handler(BaseHTTPRequestHandler):
         if status == 401:
             self.send_header("WWW-Authenticate", 'Bearer realm="orders"')
         self.end_headers()
-        self.wfile.write(data)
         LOGGER.info(json.dumps({"event": "request_completed", "request_id": request_id,
                                 "route": route, "status": status, "reason": reason}))
+        self.wfile.write(data)
 
 def make_server(port=8080, token=None, order_store=None):
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
