@@ -5,7 +5,7 @@
 Status: foundation release. One runnable API/authentication exercise; full SaaS stack is planned.
 This is an independent lab, not employment or production experience. No learner incidents are certified complete.
 
-[Architecture](docs/architecture.md) · [Incident catalogue](incidents/README.md) · [Roadmap](docs/roadmap.md) · [Market evidence](docs/market.md) · [Assessment](docs/readiness.md)
+[Start here](docs/start-here.md) · [Architecture](docs/architecture.md) · [Incident catalogue](incidents/README.md) · [Roadmap](docs/roadmap.md) · [Market evidence](docs/market.md) · [Assessment](docs/readiness.md)
 
 ## What a reviewer can verify today
 
