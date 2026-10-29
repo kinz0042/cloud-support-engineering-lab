@@ -7,3 +7,9 @@ Run the Compose stack, create a synthetic order, then run `docker compose stop d
 Hypotheses to test: authentication failure, API process failure, database connection failure. Explain the evidence that separates them. Create a customer update without an unsupported recovery ETA. Complete [the template](../TEMPLATE.md).
 
 Status: implemented scenario; Docker/PostgreSQL outage and recovery have passed the automated CI smoke test; learner investigation is pending. Never intentionally stop a shared or production database.
+
+## Reproduce and investigate
+
+In a disposable stack, start with `docker compose up -d --build`, then check `curl -i http://127.0.0.1:8081/health` and `curl -i http://127.0.0.1:8081/ready`. Stop only the local lab database with `docker compose stop db`. Repeat both checks, then send an authenticated order-list request using the example in [operations](../../docs/operations.md). Capture response status, time and request ID; compare `docker compose ps` and `docker compose logs --tail=50 api db`.
+
+A healthy process with failed readiness supports a dependency failure; it does not alone prove the exact cause. Test authentication separately and use container status and logs to distinguish the stopped database from a bad credential. Restore using `docker compose start db`; wait for readiness, check an authenticated read and a new synthetic write, and confirm tenant isolation. Record evidence and uncertainties in the incident template.
