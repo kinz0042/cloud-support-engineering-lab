@@ -21,11 +21,12 @@ def deliver(row, endpoint, secret):
         "Content-Type": "application/json", "X-Relay-Signature": signature})
     try:
         with urlopen(request, timeout=3) as response:
-            return 200 <= response.status < 300, str(response.status)
+            return 200 <= response.status < 300, str(response.status), None
     except HTTPError as exc:
-        return False, str(exc.code)
+        retry = exc.headers.get("Retry-After") if exc.code == 429 else None
+        return False, str(exc.code), min(int(retry), 300) if retry and retry.isdigit() else None
     except (URLError, TimeoutError):
-        return False, "transport_error"
+        return False, "transport_error", None
 
 
 def run():
@@ -39,9 +40,9 @@ def run():
             if row is None:
                 time.sleep(1)
                 continue
-            success, code = deliver(row, endpoint, secret)
+            success, code, retry_delay = deliver(row, endpoint, secret)
             state = store.finish_delivery(row["id"], row["attempts"], success,
-                                          None if success else code)
+                                          None if success else code, retry_delay)
             LOG.info(json.dumps({"event": "delivery_attempt", "delivery_id": row["id"],
                                  "attempt": row["attempts"], "state": state, "result": code}))
         except Exception as exc:

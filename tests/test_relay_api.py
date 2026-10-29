@@ -146,3 +146,17 @@ class RelayTests(unittest.TestCase):
             partner.shutdown()
             partner.server_close()
             thread.join()
+
+    def test_partner_rate_limit_gives_bounded_retry_delay(self):
+        partner = make_partner(0, "test-secret", "rate_limit")
+        thread = threading.Thread(target=partner.serve_forever, daemon=True)
+        thread.start()
+        try:
+            row = {"id": 8, "order_id": str(uuid.uuid4()), "tenant_id": "acme"}
+            endpoint = "http://127.0.0.1:" + str(partner.server_port) + "/webhook"
+            self.assertEqual(deliver(row, endpoint, "test-secret"), (False, "429", 5))
+            self.assertEqual(partner.seen, set())
+        finally:
+            partner.shutdown()
+            partner.server_close()
+            thread.join()

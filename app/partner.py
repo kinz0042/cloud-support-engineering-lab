@@ -37,6 +37,12 @@ class Handler(BaseHTTPRequestHandler):
         if self.server.mode == "reject":
             self.send_error(503)
             return
+        if self.server.mode == "rate_limit":
+            self.send_response(429)
+            self.send_header("Retry-After", "5")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
         with self.server.lock:
             duplicate = event_id in self.server.seen
             self.server.seen.add(event_id)
@@ -49,7 +55,7 @@ class Handler(BaseHTTPRequestHandler):
 def make_server(port=8082, secret=None, mode=None, host="127.0.0.1"):
     secret = secret if secret is not None else os.environ["LAB_WEBHOOK_SECRET"]
     mode = mode if mode is not None else os.environ.get("LAB_PARTNER_MODE", "normal")
-    if not secret or mode not in ("normal", "reject"):
+    if not secret or mode not in ("normal", "reject", "rate_limit"):
         raise ValueError("Invalid partner configuration")
     server = ThreadingHTTPServer((host, port), Handler)
     server.secret, server.mode, server.seen, server.lock = secret, mode, set(), threading.Lock()

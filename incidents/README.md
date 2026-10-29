@@ -13,6 +13,6 @@
 | INC-009 | DNS or TLS connection fails | Planned | Lookup, connection and certificate-chain evidence |
 | INC-010 | IAM denies private S3 object access | Planned | Caller identity, exact API, policy evaluation |
 | INC-011 | Security group blocks application traffic | Planned | Flow/path tests and narrowly scoped rule change |
-| INC-012 | Integration loops on rate limits | Planned | Retry-After, bounded backoff, recovery test |
+| INC-012 | Partner rate limits delivery | Docker drill; integration unverified | Retry-After, bounded retries, recovery test |
 
 Planned incidents are not implemented or completed. Severity depends on demonstrated impact, not status code alone.

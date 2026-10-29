@@ -71,9 +71,9 @@ def claim_delivery():
         ).fetchone()
 
 
-def finish_delivery(delivery_id, attempts, success, error_code=None):
+def finish_delivery(delivery_id, attempts, success, error_code=None, retry_delay=None):
     state = "delivered" if success else "dead" if attempts >= 5 else "pending"
-    delay = min(2 ** attempts, 60)
+    delay = retry_delay if retry_delay is not None else min(2 ** attempts, 60)
     with _connect() as conn:
         conn.execute(
             "UPDATE deliveries SET state=%s, lease_until=NULL, last_error=%s, "

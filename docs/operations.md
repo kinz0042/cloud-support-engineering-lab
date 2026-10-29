@@ -20,4 +20,4 @@ Windows PowerShell: use `curl.exe` for these commands; quoting JSON differs by s
 
 Postgres schema initializes only on a fresh volume. To inspect tables: `docker compose exec db psql -U lab -d relaydesk -c "SELECT id,state,attempts,last_error FROM deliveries;"`. To stop without deleting data: `docker compose down`. Never run `down -v` against valuable data; it destroys the lab database volume.
 
-Failure drills: [database](../incidents/INC-003/brief.md), [delivery](../incidents/INC-004/brief.md), [duplicate callback](../incidents/INC-005/brief.md). Keep timestamps, request IDs, a hypothesis table, a tested fix and clear customer update. Never paste raw API keys or database URLs into public incident reports.
+Failure drills: [database](../incidents/INC-003/brief.md), [delivery](../incidents/INC-004/brief.md), [duplicate callback](../incidents/INC-005/brief.md), [rate limit](../incidents/INC-012/brief.md). Keep timestamps, request IDs, a hypothesis table, a tested fix and clear customer update. Never paste raw API keys or database URLs into public incident reports.
