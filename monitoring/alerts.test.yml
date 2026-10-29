@@ -1,0 +1,20 @@
+rule_files:
+  - alerts.yml
+evaluation_interval: 5s
+tests:
+  - interval: 5s
+    input_series:
+      - series: 'relaydesk_database_ready{instance="api:8081",job="relaydesk"}'
+        values: '0x12'
+      - series: 'up{instance="api:8081",job="relaydesk"}'
+        values: '1x12'
+    alert_rule_test:
+      - eval_time: 40s
+        alertname: RelayDeskDatabaseUnavailable
+        exp_alerts:
+          - exp_labels:
+              instance: api:8081
+              job: relaydesk
+              severity: warning
+            exp_annotations:
+              summary: RelayDesk cannot connect to PostgreSQL
