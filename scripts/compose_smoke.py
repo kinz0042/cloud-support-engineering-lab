@@ -60,6 +60,14 @@ assert call('/v1/callbacks', 'POST', callback, headers=headers)[1]['duplicate']
 subprocess.run(['docker', 'compose', 'stop', 'db'], check=True)
 try:
     assert call('/health')[0] == 200
+    diagnostic = subprocess.run(['python3', 'scripts/triage.py', '--profile', 'compose'],
+                                capture_output=True, text=True, check=False)
+    assert diagnostic.returncode == 1, 'Triage must report the dependency outage'
+    report = json.loads(diagnostic.stdout)
+    assert report['health']['status'] == 200
+    assert report['readiness']['status'] == 503
+    assert report['orders']['status'] == 503
+    assert 'Readiness failed' in report['assessment']
     try:
         call('/ready')
         raise AssertionError('Readiness unexpectedly succeeded while database stopped')
@@ -78,4 +86,8 @@ while True:
         raise SystemExit('Database did not recover')
     time.sleep(1)
 assert len(call('/v1/orders', token='acme-local-key')[1]['orders']) == 1
+diagnostic = subprocess.run(['python3', 'scripts/triage.py', '--profile', 'compose'],
+                            capture_output=True, text=True, check=True)
+report = json.loads(diagnostic.stdout)
+assert report['health']['status'] == report['readiness']['status'] == report['orders']['status'] == 200
 print('Compose API, tenant isolation, order replay, delivery, callback deduplication and database recovery passed')
