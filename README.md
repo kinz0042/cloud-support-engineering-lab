@@ -5,7 +5,7 @@
 Status: Python foundation and Docker/PostgreSQL integration profile. Real PostgreSQL integration and Docker Compose startup, delivery, callback deduplication and database recovery pass GitHub Actions.
 This is an independent lab, not employment or production experience. No learner incidents are certified complete.
 
-[Start here](docs/start-here.md) · [Architecture](docs/architecture.md) · [Incident catalogue](incidents/README.md) · [Support playbook](docs/support-playbook.md) · [API and Postman](docs/api.md) · [Operations](docs/operations.md) · [Observability](docs/observability.md) · [Roadmap](docs/roadmap.md) · [Market evidence](docs/market.md) · [Assessment](docs/readiness.md)
+[Start here](docs/start-here.md) · [Architecture](docs/architecture.md) · [Incident catalogue](incidents/README.md) · [Support playbook](docs/support-playbook.md) · [API and Postman](docs/api.md) · [OAuth lab](docs/oauth.md) · [AWS sandbox](cloud/aws-s3/README.md) · [Operations](docs/operations.md) · [Observability](docs/observability.md) · [Roadmap](docs/roadmap.md) · [Market evidence](docs/market.md) · [Assessment](docs/readiness.md)
 
 ## What a reviewer can verify today
 
@@ -57,7 +57,7 @@ Every investigation records expected versus actual behavior, timestamps, request
 
 ## Scope and safety
 
-Synthetic customers and orders only. The demonstration credentials are public and local-only. This is not production software: no TLS, rate limiting, secret management or OAuth/JWT verification. The foundation on port 8080 remains static; the Docker profile on 8081 uses PostgreSQL. See [security](docs/security.md). Never expose it publicly.
+Synthetic customers and orders only. The demonstration credentials are public and local-only. This is not production software: no production TLS, rate limiting or secret management. OAuth/JWT is available in a separate local demonstration profile. The foundation on port 8080 remains static; the Docker profile on 8081 uses PostgreSQL. See [security](docs/security.md). Never expose it publicly.
 
 ## Attribution
 
