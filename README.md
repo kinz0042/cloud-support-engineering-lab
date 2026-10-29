@@ -11,6 +11,7 @@ This is an independent lab, not employment or production experience. No learner 
 
 - A local HTTP service with a health endpoint, protected order endpoint, safe structured request logs and correlation IDs.
 - A reproducible customer authentication failure and contract tests for success and error paths.
+- A read-only triage tool checks local health, readiness and authenticated order access without printing credentials.
 - A consistent investigation template separating observations, hypotheses and conclusions.
 - Explicit distinction between implemented capabilities and future work.
 - A Docker profile with synthetic tenants, PostgreSQL, a worker and signed webhooks. An optional Prometheus profile adds readiness monitoring and alert rules. PostgreSQL and full Compose smoke checks have passed on GitHub Actions.
