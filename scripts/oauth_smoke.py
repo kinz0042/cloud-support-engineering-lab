@@ -31,7 +31,7 @@ while True:
     try:
         acme = token('acme-client')
         break
-    except (HTTPError, URLError, TimeoutError):
+    except (HTTPError, URLError, TimeoutError, ConnectionError):
         if time.monotonic() >= deadline:
             raise SystemExit('Identity provider did not become ready')
         time.sleep(2)
