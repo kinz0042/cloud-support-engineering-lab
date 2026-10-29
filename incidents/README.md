@@ -9,8 +9,8 @@
 | INC-005 | Duplicate signed callback | Verified in CI; learner investigation pending | Event IDs and idempotency test |
 | INC-006 | Queries become slow with growing data | SQL drill verified in CI; learner investigation pending | EXPLAIN ANALYZE before/after and dataset size |
 | INC-007 | JWT rejected | Verified in OAuth CI; learner investigation pending | Redacted claims, clock/issuer/audience/signature checks |
-| INC-008 | Container cannot reach database | Planned | Network inspection and service-name resolution |
-| INC-009 | DNS or TLS connection fails | Planned | Lookup, connection and certificate-chain evidence |
+| INC-008 | Container cannot reach database | Diagnostic drill authored; CI verification pending | Network inspection and service-name resolution |
+| INC-009 | DNS or TLS connection fails | Diagnostic drill authored; CI verification pending | Lookup, connection and certificate-chain evidence |
 | INC-010 | IAM denies private S3 object access | Designed; AWS deployment and investigation pending | Caller identity, exact API, policy evaluation |
 | INC-011 | Security group blocks application traffic | Planned | Flow/path tests and narrowly scoped rule change |
 | INC-012 | Partner rate limits delivery | Recovery verified in CI; learner investigation pending | Retry-After, bounded retries, recovery test |
