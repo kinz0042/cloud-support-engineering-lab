@@ -1,5 +1,7 @@
 -- Disposable local lab only. Adds 50,000 synthetic rows, without an outbox.
 -- Baseline and improved timings depend on machine, cache, and PostgreSQL settings.
+-- Reset only the dedicated disposable-lab index so reruns have a baseline.
+DROP INDEX IF EXISTS orders_tenant_status_lab_idx;
 INSERT INTO orders (id, tenant_id, external_id, status, created_at)
 SELECT gen_random_uuid(), 'acme', 'perf-demo-' || n,
        CASE WHEN n % 1000 = 0 THEN 'needs_review' ELSE 'received' END,
