@@ -16,3 +16,21 @@
 The plan and timing show what happened on this single disposable CI run. The index is one plausible improvement for this fixture and query, not proof of a production speedup. Different table sizes, cache state, tenant distributions and concurrent writes can change the result. Indexes also add write and storage cost. The job log contains the original `EXPLAIN (ANALYZE, BUFFERS)` output.
 
 The CI job checked that the script ran, not that a particular plan or performance threshold must appear. The learner must independently examine the query and output, test competing hypotheses, evaluate the trade-off, and write the customer and engineering communications before this can count as their investigation. See [the brief](brief.md) and [template](../TEMPLATE.md).
+
+## Investigation record
+
+**Complaint and severity:** The brief's slow review queue is a simulated customer report. No real impact, SLA, or severity was established.
+
+**Reproduction:** Load the synthetic fixture and execute the baseline and post-index plans as specified in `sql/slow_orders.sql`. The workflow ran both plans after `ANALYZE`.
+
+**Hypotheses considered:** A missing selective index, database resource saturation, locks, and network latency can all cause slow requests. The CI exercise only tests the index hypothesis for one database query. It does not measure locks, network latency or application response times. The observed scan change supports that an index changed this query's plan in this environment; further measurements would be needed to establish the cause of a real user's symptom.
+
+**Resolution and validation:** The experiment added `orders_tenant_status_lab_idx` and reran the same query. Both plans returned 50 rows; the reported execution times and scan types appear above. The workflow did not measure write latency or storage cost.
+
+**Rollback and prevention:** In the disposable lab, remove the experimental index with `DROP INDEX orders_tenant_status_lab_idx`. For real services, assess the impact of schema changes, measure representative traffic, and follow the team's deployment and rollback procedure. Monitor query plans and latency rather than assuming every index is beneficial.
+
+**Example initial customer response:** “We’re investigating the slower review queue. Please share when the slowdown started and an approximate request ID or timestamp, without sending credentials.”
+
+**Example update:** “We found a database query worth examining and are testing whether an index improves it. We’ll validate the result and its impact on writes before recommending a change.”
+
+**Engineering note:** Attach the redacted query, schema, query plans, row counts, database version, timings and cache context. Include untested causes and rollback steps. These are illustrative communications; no real customer was contacted.
