@@ -7,3 +7,5 @@ Terraform initialization and static validation passed in [GitHub Actions](https:
 Read [the S3/IAM investigation design](../../docs/aws-s3-design.md). Under IAM, a policy decision can also depend on bucket policies, organization controls, permissions boundaries and encryption-key policies. The example policy alone does not prove access in a real account.
 
 Only after an explicit deployment decision: initialize, validate and plan with explicit `aws_region` and `bucket_name`; review all changes before applying. `force_destroy = false` means destroy will fail while objects remain. Carefully remove only synthetic lab objects and versions, then destroy and verify cleanup. Do not perform bulk deletion in an account containing valuable data. IAM simulator output can differ from live authorization and should be checked against the actual environment.
+
+See the [S3 access-denied investigation plan](incident-runbook.md) for evidence, validation and cleanup steps.
