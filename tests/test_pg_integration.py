@@ -58,6 +58,17 @@ class PostgreSQLIntegration(unittest.TestCase):
             self.assertEqual(conn.execute("SELECT count(*) FROM deliveries").fetchone()[0], 2)
         row = relay_store.claim_delivery()
         self.assertEqual(row["order_id"], order_id)
+        # Simulate an expired lease while a worker is delayed, then claim again.
+        with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+            conn.execute("UPDATE deliveries SET lease_until=now()-interval '1 second' WHERE id=%s", (row["id"],))
+            # Keep the second fixture out of the due queue for this assertion.
+            conn.execute("UPDATE deliveries SET next_attempt_at=now()+interval '1 hour' WHERE id<>%s", (row["id"],))
+        current = relay_store.claim_delivery()
+        self.assertEqual(current["id"], row["id"])
+        self.assertEqual(current["attempts"], row["attempts"] + 1)
+        with self.assertRaises(relay_store.LeaseLost):
+            relay_store.finish_delivery(row["id"], row["attempts"], False, "stale")
+        row = current
         partner = make_partner(0, "ci-secret", "normal")
         worker = threading.Thread(target=partner.serve_forever, daemon=True)
         worker.start()
