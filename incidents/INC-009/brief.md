@@ -8,4 +8,4 @@ Use `python scripts/netdiag.py bad-name.invalid --port 8081` to simulate an unre
 
 The tool uses the system trust store and hostname verification; it does not turn off certificate checks. A successful HTTP response means HTTP was reached, not that its status is successful. Test only systems you are authorized to contact. Record the error class, timestamps, configuration and competing hypotheses in [the template](../TEMPLATE.md), then write an escalation and customer update. Do not include sensitive hostnames or addresses in a public incident report.
 
-Status: synthetic diagnostic drill authored. Unit tests cover DNS failure, local HTTP success and TLS protocol failure; full Compose command check is subject to CI verification.
+Status: synthetic diagnostic drill authored. Unit tests cover DNS failure, local HTTP success and TLS protocol failure; the Compose CI network step also passed. [CI run](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/40960442415).
