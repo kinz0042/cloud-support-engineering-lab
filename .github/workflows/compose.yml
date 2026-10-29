@@ -23,6 +23,8 @@ jobs:
         run: docker compose up --build -d
       - name: Verify API and asynchronous delivery
         run: python3 scripts/compose_smoke.py
+      - name: Verify read-only API triage
+        run: python3 scripts/triage.py --profile compose
       - name: Verify network diagnostics
         run: python3 scripts/network_smoke.py
       - name: Verify webhook failure recovery
