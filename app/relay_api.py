@@ -61,7 +61,10 @@ class Handler(BaseHTTPRequestHandler):
             with self.server.metrics_lock:
                 lines = [f'relaydesk_requests_total{{route="{r}",status="{s}"}} {n}'
                          for (r, s), n in sorted(self.server.requests.items())]
-            data = ("# TYPE relaydesk_requests_total counter\n" + "\n".join(lines) + "\n").encode()
+            database_ready = 1 if self.server.store.ready() else 0
+            data = ("# TYPE relaydesk_requests_total counter\n" + "\n".join(lines) +
+                    "\n# TYPE relaydesk_database_ready gauge\n" +
+                    f"relaydesk_database_ready {database_ready}\n").encode()
             self.send_response(200)
             self.send_header("Content-Type", "text/plain; version=0.0.4")
             self.send_header("Content-Length", str(len(data)))
