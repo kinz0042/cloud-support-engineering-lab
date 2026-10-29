@@ -11,6 +11,7 @@ from app.relay_api import make_server
 from app.partner import make_server as make_partner
 from app.worker import deliver
 from app.relay_store import UnknownOrder, CallbackConflict
+from unittest.mock import patch
 
 
 class FakeStore:
@@ -21,6 +22,10 @@ class FakeStore:
 
     def ready(self):
         return self.available
+
+    def delivery_metrics(self):
+        return {"counts": {"pending": 3, "leased": 1, "delivered": 4, "dead": 2},
+                "oldest_due_seconds": 42.0}
 
     def list_orders(self, tenant):
         if not self.available:
@@ -122,6 +127,37 @@ class RelayTests(unittest.TestCase):
         self.assertEqual(body["error"], "invalid_request")
         self.assertEqual(self.call("/v1/orders", headers={"Authorization": "Bearer wrong"})[0], 401)
 
+    def test_queue_metrics_are_bounded_and_do_not_contain_event_or_tenant_labels(self):
+        with urlopen(self.url + "/metrics", timeout=3) as response:
+            metrics = response.read().decode()
+        self.assertIn('relaydesk_deliveries{state="dead"} 2', metrics)
+        self.assertIn('relaydesk_deliveries{state="pending"} 3', metrics)
+        self.assertIn("relaydesk_delivery_metrics_available 1", metrics)
+        self.assertIn("relaydesk_oldest_due_delivery_age_seconds 42.0", metrics)
+        for private_label in ("tenant_id", "event_id", "acme-key"):
+            self.assertNotIn(private_label, metrics)
+
+    def test_failed_queue_collection_is_not_exported_as_zero_backlog(self):
+        with patch.object(self.store, "delivery_metrics", side_effect=RuntimeError("private-db-secret")):
+            with urlopen(self.url + "/metrics", timeout=3) as response:
+                metrics = response.read().decode()
+        self.assertIn("relaydesk_database_ready 1", metrics)
+        self.assertIn("relaydesk_delivery_metrics_available 0", metrics)
+        self.assertNotIn('relaydesk_deliveries{', metrics)
+        self.assertFalse(any(line.startswith("relaydesk_oldest_due_delivery_age_seconds ")
+                             for line in metrics.splitlines()))
+        self.assertNotIn("private-db-secret", metrics)
+
+    def test_database_outage_does_not_attempt_another_queue_connection(self):
+        self.store.available = False
+        with patch.object(self.store, "delivery_metrics") as collect:
+            with urlopen(self.url + "/metrics", timeout=3) as response:
+                metrics = response.read().decode()
+        collect.assert_not_called()
+        self.assertIn("relaydesk_database_ready 0", metrics)
+        self.assertIn("relaydesk_delivery_metrics_available 0", metrics)
+        self.assertNotIn('relaydesk_deliveries{', metrics)
+
     def test_callback_signature_and_duplicate(self):
         order_id = str(uuid.uuid4())
         body = json.dumps({"event_id": "evt-1", "order_id": order_id}).encode()
@@ -207,3 +243,4 @@ class RelayTests(unittest.TestCase):
             partner.shutdown()
             partner.server_close()
             thread.join()
+

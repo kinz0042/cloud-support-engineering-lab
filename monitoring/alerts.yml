@@ -22,3 +22,25 @@ groups:
           severity: warning
         annotations:
           summary: More than three server errors observed in five minutes
+      - alert: RelayDeskDeadDeliveries
+        expr: relaydesk_deliveries{state="dead"} > 0
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: Exhausted webhook deliveries require investigation
+      - alert: RelayDeskDeliveryBacklog
+        expr: relaydesk_oldest_due_delivery_age_seconds > 30
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: Due webhook work is not being processed promptly
+      - alert: RelayDeskDeliveryMetricsUnavailable
+        expr: (relaydesk_delivery_metrics_available == 0) and on(instance,job) (relaydesk_database_ready == 1)
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: Queue metrics cannot be collected although the database responds
+

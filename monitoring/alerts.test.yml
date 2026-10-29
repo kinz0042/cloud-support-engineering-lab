@@ -18,3 +18,82 @@ tests:
               severity: warning
             exp_annotations:
               summary: RelayDesk cannot connect to PostgreSQL
+  - interval: 5s
+    input_series:
+      - series: 'relaydesk_deliveries{state="dead",instance="api:8081",job="relaydesk"}'
+        values: '0 1x8 0x4'
+    alert_rule_test:
+      - eval_time: 20s
+        alertname: RelayDeskDeadDeliveries
+        exp_alerts: []
+      - eval_time: 40s
+        alertname: RelayDeskDeadDeliveries
+        exp_alerts:
+          - exp_labels:
+              state: dead
+              instance: api:8081
+              job: relaydesk
+              severity: warning
+            exp_annotations:
+              summary: Exhausted webhook deliveries require investigation
+      - eval_time: 60s
+        alertname: RelayDeskDeadDeliveries
+        exp_alerts: []
+  - interval: 5s
+    input_series:
+      - series: 'relaydesk_oldest_due_delivery_age_seconds{instance="api:8081",job="relaydesk"}'
+        values: '31x9 0x4'
+    alert_rule_test:
+      - eval_time: 20s
+        alertname: RelayDeskDeliveryBacklog
+        exp_alerts: []
+      - eval_time: 40s
+        alertname: RelayDeskDeliveryBacklog
+        exp_alerts:
+          - exp_labels:
+              instance: api:8081
+              job: relaydesk
+              severity: warning
+            exp_annotations:
+              summary: Due webhook work is not being processed promptly
+      - eval_time: 60s
+        alertname: RelayDeskDeliveryBacklog
+        exp_alerts: []
+  - interval: 5s
+    input_series:
+      - series: 'relaydesk_oldest_due_delivery_age_seconds{instance="api:8081",job="relaydesk"}'
+        values: '30x12'
+    alert_rule_test:
+      - eval_time: 40s
+        alertname: RelayDeskDeliveryBacklog
+        exp_alerts: []
+  - interval: 5s
+    input_series:
+      - series: 'relaydesk_delivery_metrics_available{instance="api:8081",job="relaydesk"}'
+        values: '0x9 1x4'
+      - series: 'relaydesk_database_ready{instance="api:8081",job="relaydesk"}'
+        values: '1x13'
+    alert_rule_test:
+      - eval_time: 40s
+        alertname: RelayDeskDeliveryMetricsUnavailable
+        exp_alerts:
+          - exp_labels:
+              instance: api:8081
+              job: relaydesk
+              severity: warning
+            exp_annotations:
+              summary: Queue metrics cannot be collected although the database responds
+      - eval_time: 60s
+        alertname: RelayDeskDeliveryMetricsUnavailable
+        exp_alerts: []
+  - interval: 5s
+    input_series:
+      - series: 'relaydesk_delivery_metrics_available{instance="api:8081",job="relaydesk"}'
+        values: '0x12'
+      - series: 'relaydesk_database_ready{instance="api:8081",job="relaydesk"}'
+        values: '0x12'
+    alert_rule_test:
+      - eval_time: 40s
+        alertname: RelayDeskDeliveryMetricsUnavailable
+        exp_alerts: []
+

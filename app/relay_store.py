@@ -39,6 +39,25 @@ def ready():
         return False
 
 
+def delivery_metrics():
+    """One read-only aggregate snapshot, with a bounded statement duration."""
+    with _connect() as conn:
+        conn.execute("SET TRANSACTION READ ONLY")
+        conn.execute("SET LOCAL statement_timeout = '2s'")
+        row = conn.execute(
+            "SELECT count(*) FILTER (WHERE state='pending') AS pending, "
+            "count(*) FILTER (WHERE state='leased') AS leased, "
+            "count(*) FILTER (WHERE state='delivered') AS delivered, "
+            "count(*) FILTER (WHERE state='dead') AS dead, "
+            "COALESCE(EXTRACT(EPOCH FROM now()-MIN(CASE "
+            "WHEN state='pending' AND next_attempt_at<=now() THEN next_attempt_at "
+            "WHEN state='leased' AND lease_until<now() THEN lease_until END)),0) AS oldest_due "
+            "FROM deliveries"
+        ).fetchone()
+    return {"counts": {state: int(row[state]) for state in ("pending", "leased", "delivered", "dead")},
+            "oldest_due_seconds": max(0.0, float(row["oldest_due"]))}
+
+
 def list_orders(tenant):
     try:
         with _connect() as conn:
@@ -166,4 +185,5 @@ def record_callback(event_id, order_id):
     except ForeignKeyViolation as exc:
         raise UnknownOrder() from exc
     return row is not None
+
 

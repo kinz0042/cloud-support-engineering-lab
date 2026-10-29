@@ -83,6 +83,35 @@ class PostgreSQLIntegration(unittest.TestCase):
         with self.assertRaises(relay_store.ReplayRejected):
             self.replay(row)
 
+    def test_queue_metrics_distinguish_dead_future_due_and_expired_lease(self):
+        empty = relay_store.delivery_metrics()
+        self.assertEqual(sum(empty["counts"].values()), 0)
+        self.assertEqual(empty["oldest_due_seconds"], 0)
+        row = self.exhaust_delivery()
+        dead = relay_store.delivery_metrics()
+        self.assertEqual(dead["counts"]["dead"], 1)
+        self.assertEqual(dead["oldest_due_seconds"], 0)
+        self.replay(row)
+        with relay_store._connect() as conn:
+            conn.execute("UPDATE deliveries SET next_attempt_at=now()+interval '1 hour' WHERE id=%s", (row["id"],))
+        future = relay_store.delivery_metrics()
+        self.assertEqual(future["counts"]["pending"], 1)
+        self.assertEqual(future["oldest_due_seconds"], 0)
+        with relay_store._connect() as conn:
+            conn.execute("UPDATE deliveries SET next_attempt_at=now()-interval '20 seconds' WHERE id=%s", (row["id"],))
+        self.assertGreaterEqual(relay_store.delivery_metrics()["oldest_due_seconds"], 20)
+        current = relay_store.claim_delivery()
+        self.assertEqual(relay_store.delivery_metrics()["oldest_due_seconds"], 0)
+        with relay_store._connect() as conn:
+            conn.execute("UPDATE deliveries SET lease_until=now()-interval '40 seconds' WHERE id=%s", (row["id"],))
+        expired = relay_store.delivery_metrics()
+        self.assertEqual(expired["counts"]["leased"], 1)
+        self.assertGreaterEqual(expired["oldest_due_seconds"], 40)
+        relay_store.finish_delivery(current["id"], current["attempts"], True)
+        recovered = relay_store.delivery_metrics()
+        self.assertEqual(recovered["counts"]["delivered"], 1)
+        self.assertEqual(recovered["oldest_due_seconds"], 0)
+
     def test_replay_is_bounded_and_concurrent_requests_do_not_double_replay(self):
         row = self.exhaust_delivery()
         with self.assertRaises(relay_store.ReplayRejected):
@@ -180,4 +209,5 @@ class PostgreSQLIntegration(unittest.TestCase):
         with self.assertRaises(relay_store.CallbackConflict):
             relay_store.record_callback("ci-event", other_order)
         self.assertFalse(relay_store.record_callback("ci-event", order_id))
+
 

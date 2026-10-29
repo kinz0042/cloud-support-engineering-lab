@@ -62,9 +62,28 @@ class Handler(BaseHTTPRequestHandler):
                 lines = [f'relaydesk_requests_total{{route="{r}",status="{s}"}} {n}'
                          for (r, s), n in sorted(self.server.requests.items())]
             database_ready = 1 if self.server.store.ready() else 0
+            queue_available = 0
+            queue_lines = []
+            if database_ready:
+                try:
+                    snapshot = self.server.store.delivery_metrics()
+                    queue_lines = [f'relaydesk_deliveries{{state="{state}"}} {snapshot["counts"][state]}'
+                                   for state in ("pending", "leased", "delivered", "dead")]
+                    queue_lines.append('relaydesk_oldest_due_delivery_age_seconds ' +
+                                       str(snapshot["oldest_due_seconds"]))
+                    queue_available = 1
+                except Exception:
+                    # Missing telemetry is not a healthy empty queue. Avoid logging
+                    # database exceptions that might disclose connection credentials.
+                    pass
             data = ("# TYPE relaydesk_requests_total counter\n" + "\n".join(lines) +
                     "\n# TYPE relaydesk_database_ready gauge\n" +
-                    f"relaydesk_database_ready {database_ready}\n").encode()
+                    f"relaydesk_database_ready {database_ready}\n" +
+                    "# TYPE relaydesk_delivery_metrics_available gauge\n" +
+                    f"relaydesk_delivery_metrics_available {queue_available}\n" +
+                    "# TYPE relaydesk_deliveries gauge\n" +
+                    "# TYPE relaydesk_oldest_due_delivery_age_seconds gauge\n" +
+                    "\n".join(queue_lines) + "\n").encode()
             self.send_response(200)
             self.send_header("Content-Type", "text/plain; version=0.0.4")
             self.send_header("Content-Length", str(len(data)))
@@ -158,3 +177,4 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     with make_server() as server:
         server.serve_forever()
+
