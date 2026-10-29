@@ -13,3 +13,5 @@ Open http://127.0.0.1:9090 and inspect **Status → Targets** and **Alerts**. Tr
 For [INC-013](../incidents/INC-013/brief.md), stop the disposable database with `docker compose stop db`, wait at least 30 seconds plus a scrape interval, inspect the alert, then restore it using `docker compose start db`. Never stop shared or production infrastructure. Use `docker compose --profile observability down` to stop the lab while retaining the database volume. Alert rules are local demonstrations; there is no Alertmanager or email integration.
 
 The alert thresholds are for practice, not service-level objectives. A short outage may clear before the `for` duration, and an absent or unreachable metrics endpoint is a different signal from a database gauge showing zero. The partner and worker currently have structured logs but no dedicated metrics.
+
+The live scrape, database outage alert and recovery were verified in [GitHub Actions](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/40957624439). Other alerts and external notifications were not tested by that workflow.
