@@ -6,4 +6,4 @@ In a disposable local stack, set `LAB_PARTNER_MODE=rate_limit` and run `docker c
 
 Switch back to `LAB_PARTNER_MODE=normal` and recreate the partner. For a dead delivery, investigate whether the partner processed the fixed event ID before planning a replay. Explain to the customer the difference between order acceptance and webhook delivery. Document evidence, hypothesis tests, timing, recovery and prevention in [the template](../TEMPLATE.md).
 
-Status: implemented scenario; Docker/PostgreSQL integration execution still needs verification. Rate-limit state is a deterministic lab mode, not a realistic shared quota service.
+Status: implemented scenario; The injected failure and recovery passed the CI webhook step; learner investigation remains pending. See [verification evidence](../webhook-verification.md). Rate-limit state is a deterministic lab mode, not a realistic shared quota service.
