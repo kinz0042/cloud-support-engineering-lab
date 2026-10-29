@@ -4,6 +4,46 @@ evaluation_interval: 5s
 tests:
   - interval: 5s
     input_series:
+      - series: 'relaydesk_request_duration_seconds_count{route="/v1/orders",instance="api:8081",job="relaydesk"}'
+        values: '0+2x30'
+      - series: 'relaydesk_request_duration_seconds_bucket{route="/v1/orders",le="0.5",instance="api:8081",job="relaydesk"}'
+        values: '0x10 2+2x19'
+    alert_rule_test:
+      - eval_time: 10s
+        alertname: RelayDeskOrderLatency
+        exp_alerts: []
+      - eval_time: 45s
+        alertname: RelayDeskOrderLatency
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+            exp_annotations:
+              summary: More than half of recent order requests exceeded 500ms
+      - eval_time: 130s
+        alertname: RelayDeskOrderLatency
+        exp_alerts: []
+  - interval: 5s
+    input_series:
+      - series: 'relaydesk_request_duration_seconds_count{route="/v1/orders",instance="api:8081",job="relaydesk"}'
+        values: '0+0.1x12'
+      - series: 'relaydesk_request_duration_seconds_bucket{route="/v1/orders",le="0.5",instance="api:8081",job="relaydesk"}'
+        values: '0x12'
+    alert_rule_test:
+      - eval_time: 45s
+        alertname: RelayDeskOrderLatency
+        exp_alerts: []
+  - interval: 5s
+    input_series:
+      - series: 'relaydesk_request_duration_seconds_count{route="/v1/orders",instance="api:8081",job="relaydesk"}'
+        values: '0x12'
+      - series: 'relaydesk_request_duration_seconds_bucket{route="/v1/orders",le="0.5",instance="api:8081",job="relaydesk"}'
+        values: '0x12'
+    alert_rule_test:
+      - eval_time: 45s
+        alertname: RelayDeskOrderLatency
+        exp_alerts: []
+  - interval: 5s
+    input_series:
       - series: 'relaydesk_database_ready{instance="api:8081",job="relaydesk"}'
         values: '0x12'
       - series: 'up{instance="api:8081",job="relaydesk"}'
@@ -96,4 +136,5 @@ tests:
       - eval_time: 40s
         alertname: RelayDeskDeliveryMetricsUnavailable
         exp_alerts: []
+
 

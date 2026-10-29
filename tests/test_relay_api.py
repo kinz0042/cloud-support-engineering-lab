@@ -10,7 +10,8 @@ from urllib.request import Request, urlopen
 from app.relay_api import make_server
 from app.partner import make_server as make_partner
 from app.worker import deliver
-from app.relay_store import UnknownOrder, CallbackConflict
+from app.relay_store import UnknownOrder, CallbackConflict, StoreQueryCanceled
+from app.request_metrics import RequestDurations
 from unittest.mock import patch
 
 
@@ -126,6 +127,31 @@ class RelayTests(unittest.TestCase):
         self.assertEqual(status, 400)
         self.assertEqual(body["error"], "invalid_request")
         self.assertEqual(self.call("/v1/orders", headers={"Authorization": "Bearer wrong"})[0], 401)
+
+    def test_latency_histogram_and_log_use_the_same_processing_duration(self):
+        self.server.request_durations = RequestDurations()
+        clock = self.server.clock
+        ticks = iter((100.0, 100.75))
+        self.server.clock = lambda: next(ticks)
+        try:
+            with self.assertLogs('relaydesk', level='INFO') as logs:
+                self.assertEqual(self.call('/v1/orders', headers={'Authorization': 'Bearer acme-key'})[0], 200)
+        finally:
+            self.server.clock = clock
+        self.assertIn('"duration_ms": 750.0', logs.output[0])
+        with urlopen(self.url + '/metrics', timeout=3) as response:
+            metrics = response.read().decode()
+        self.assertIn('relaydesk_request_duration_seconds_bucket{route="/v1/orders",le="0.5"} 0', metrics)
+        self.assertIn('relaydesk_request_duration_seconds_bucket{route="/v1/orders",le="1"} 1', metrics)
+        self.assertIn('relaydesk_request_duration_seconds_sum{route="/v1/orders"} 0.75', metrics)
+
+    def test_query_cancellation_is_correlated_without_exposing_database_details(self):
+        with patch.object(self.store, 'list_orders', side_effect=StoreQueryCanceled('private-query')):
+            status, headers, body = self.call('/v1/orders', headers={'Authorization': 'Bearer acme-key'})
+        self.assertEqual(status, 503)
+        self.assertEqual(body['error'], 'dependency_query_canceled')
+        self.assertEqual(body['request_id'], headers['X-Request-ID'])
+        self.assertNotIn('private-query', json.dumps(body))
 
     def test_queue_metrics_are_bounded_and_do_not_contain_event_or_tenant_labels(self):
         with urlopen(self.url + "/metrics", timeout=3) as response:
@@ -243,4 +269,5 @@ class RelayTests(unittest.TestCase):
             partner.shutdown()
             partner.server_close()
             thread.join()
+
 

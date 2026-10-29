@@ -43,4 +43,19 @@ groups:
           severity: warning
         annotations:
           summary: Queue metrics cannot be collected although the database responds
+      - alert: RelayDeskOrderLatency
+        expr: |
+          (
+            (
+              sum(rate(relaydesk_request_duration_seconds_count{route="/v1/orders"}[1m]))
+              - sum(rate(relaydesk_request_duration_seconds_bucket{route="/v1/orders",le="0.5"}[1m]))
+            ) / sum(rate(relaydesk_request_duration_seconds_count{route="/v1/orders"}[1m]))
+          ) > 0.5
+          and sum(increase(relaydesk_request_duration_seconds_count{route="/v1/orders"}[1m])) >= 5
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: More than half of recent order requests exceeded 500ms
+
 

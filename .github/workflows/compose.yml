@@ -42,11 +42,14 @@ jobs:
         run: docker compose exec -T db psql -v ON_ERROR_STOP=1 -U lab -d relaydesk < sql/slow_orders.sql
       - name: Verify database and stopped-worker alert recovery
         run: python3 scripts/monitoring_smoke.py
+      - name: Verify lock-induced API latency and recovery
+        run: python3 scripts/latency_smoke.py
       - name: Capture diagnostics on failure
         if: failure()
         run: docker compose ps && docker compose logs --no-color --tail=100
       - name: Clean up disposable CI database
         if: always()
         run: docker compose --profile observability down -v
+
 
 

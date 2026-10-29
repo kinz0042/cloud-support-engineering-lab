@@ -12,6 +12,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 
 from . import relay_store as store
+from .request_metrics import RequestDurations
 
 LOG = logging.getLogger("relaydesk")
 MAX_BODY = 4096
@@ -32,9 +33,11 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
     def reply(self, status, body, request_id, route, reason):
+        data = json.dumps({**body, "request_id": request_id}, separators=(",", ":")).encode()
+        duration = max(0.0, self.server.clock() - self.started_at)
         with self.server.metrics_lock:
             self.server.requests[(route, status)] += 1
-        data = json.dumps({**body, "request_id": request_id}, separators=(",", ":")).encode()
+            self.server.request_durations.observe(route, duration)
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(data)))
@@ -43,7 +46,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("WWW-Authenticate", 'Bearer realm="relaydesk"')
         self.end_headers()
         LOG.info(json.dumps({"event": "request_completed", "request_id": request_id,
-                             "route": route, "status": status, "reason": reason}))
+                             "route": route, "status": status, "reason": reason,
+                             "duration_ms": round(duration * 1000, 3)}))
         self.wfile.write(data)
 
     def body_json(self):
@@ -54,6 +58,7 @@ class Handler(BaseHTTPRequestHandler):
         return raw, json.loads(raw)
 
     def handle_request(self):
+        self.started_at = self.server.clock()
         request_id = str(uuid.uuid4())
         path = urlsplit(self.path).path
         route = path if path in ("/health", "/ready", "/metrics", "/v1/orders", "/v1/callbacks") else "unmatched"
@@ -61,6 +66,7 @@ class Handler(BaseHTTPRequestHandler):
             with self.server.metrics_lock:
                 lines = [f'relaydesk_requests_total{{route="{r}",status="{s}"}} {n}'
                          for (r, s), n in sorted(self.server.requests.items())]
+                lines.extend(self.server.request_durations.render())
             database_ready = 1 if self.server.store.ready() else 0
             queue_available = 0
             queue_lines = []
@@ -141,6 +147,9 @@ class Handler(BaseHTTPRequestHandler):
                 result, created = self.server.store.list_orders(tenant), False
             else:
                 result, created = self.server.store.create_order(tenant, external_id)
+        except store.StoreQueryCanceled:
+            return self.reply(503, {"error": "dependency_query_canceled"}, request_id, route,
+                              "database_query_canceled")
         except Exception:
             return self.reply(503, {"error": "dependency_unavailable"}, request_id, route, "database_unavailable")
         if self.command == "GET":
@@ -170,6 +179,8 @@ def make_server(port=8081, backend=None, keys=None, secret=None):
     server.webhook_secret = secret
     server.metrics_lock = threading.Lock()
     server.requests = Counter()
+    server.clock = time.perf_counter
+    server.request_durations = RequestDurations()
     return server
 
 
@@ -177,4 +188,5 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     with make_server() as server:
         server.serve_forever()
+
 

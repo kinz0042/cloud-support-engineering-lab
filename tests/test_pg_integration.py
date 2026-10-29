@@ -6,6 +6,7 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 import json
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 from app.relay_api import make_server
@@ -112,6 +113,20 @@ class PostgreSQLIntegration(unittest.TestCase):
         self.assertEqual(recovered["counts"]["delivered"], 1)
         self.assertEqual(recovered["oldest_due_seconds"], 0)
 
+    def test_order_read_lock_wait_is_bounded_and_recovers(self):
+        relay_store.create_order('acme', 'blocked-read-fixture')
+        with relay_store._connect() as locker:
+            locker.execute('LOCK TABLE orders IN ACCESS EXCLUSIVE MODE')
+            self.assertEqual(self.call('/health')[0], 200)
+            self.assertEqual(self.call('/ready')[0], 200)
+            started = time.perf_counter()
+            status, body = self.call('/v1/orders', token='ci-acme')
+            duration = time.perf_counter() - started
+            self.assertEqual(status, 503)
+            self.assertEqual(body['error'], 'dependency_query_canceled')
+            self.assertGreaterEqual(duration, 1.5)
+        self.assertEqual(self.call('/v1/orders', token='ci-acme')[0], 200)
+
     def test_replay_is_bounded_and_concurrent_requests_do_not_double_replay(self):
         row = self.exhaust_delivery()
         with self.assertRaises(relay_store.ReplayRejected):
@@ -209,5 +224,6 @@ class PostgreSQLIntegration(unittest.TestCase):
         with self.assertRaises(relay_store.CallbackConflict):
             relay_store.record_callback("ci-event", other_order)
         self.assertFalse(relay_store.record_callback("ci-event", order_id))
+
 
 

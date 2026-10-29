@@ -8,6 +8,10 @@ class StoreUnavailable(Exception):
     pass
 
 
+class StoreQueryCanceled(StoreUnavailable):
+    pass
+
+
 class UnknownOrder(Exception):
     pass
 
@@ -61,11 +65,17 @@ def delivery_metrics():
 def list_orders(tenant):
     try:
         with _connect() as conn:
+            conn.execute("SET TRANSACTION READ ONLY")
+            conn.execute("SET LOCAL statement_timeout = '2s'")
             return conn.execute(
                 "SELECT id::text, external_id, status, created_at::text FROM orders "
                 "WHERE tenant_id = %s ORDER BY created_at DESC LIMIT 100", (tenant,)
             ).fetchall()
     except Exception as exc:
+        # SQLSTATE 57014 also includes explicit cancellation. Do not claim every
+        # cancellation was a timeout without corroborating database evidence.
+        if getattr(exc, "sqlstate", None) == "57014":
+            raise StoreQueryCanceled() from exc
         raise StoreUnavailable() from exc
 
 
@@ -185,5 +195,6 @@ def record_callback(event_id, order_id):
     except ForeignKeyViolation as exc:
         raise UnknownOrder() from exc
     return row is not None
+
 
 
