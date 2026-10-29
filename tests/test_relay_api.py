@@ -4,6 +4,7 @@ import json
 import threading
 import unittest
 import uuid
+import time
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 from app.relay_api import make_server
@@ -109,9 +110,10 @@ class RelayTests(unittest.TestCase):
     def test_callback_signature_and_duplicate(self):
         order_id = str(uuid.uuid4())
         body = json.dumps({"event_id": "evt-1", "order_id": order_id}).encode()
-        signature = hmac.new(b"test-secret", body, hashlib.sha256).hexdigest()
+        timestamp = str(int(time.time()))
+        signature = hmac.new(b"test-secret", timestamp.encode() + b"." + body, hashlib.sha256).hexdigest()
         self.assertEqual(self.call("/v1/callbacks", "POST", body)[0], 401)
-        headers = {"X-Relay-Signature": signature}
+        headers = {"X-Relay-Signature": signature, "X-Relay-Timestamp": timestamp}
         first = self.call("/v1/callbacks", "POST", body, headers)
         second = self.call("/v1/callbacks", "POST", body, headers)
         self.assertEqual(first[0], 202)
@@ -120,16 +122,26 @@ class RelayTests(unittest.TestCase):
 
     def test_signed_callback_unknown_order_is_not_database_outage(self):
         body = json.dumps({"event_id": "evt-unknown", "order_id": str(uuid.uuid4())}).encode()
-        signature = hmac.new(b"test-secret", body, hashlib.sha256).hexdigest()
+        timestamp = str(int(time.time()))
+        signature = hmac.new(b"test-secret", timestamp.encode() + b"." + body, hashlib.sha256).hexdigest()
         previous = self.store.record_callback
         self.store.record_callback = lambda *_: (_ for _ in ()).throw(UnknownOrder())
         try:
             status, _, response = self.call("/v1/callbacks", "POST", body,
-                                            {"X-Relay-Signature": signature})
+                                            {"X-Relay-Signature": signature, "X-Relay-Timestamp": timestamp})
             self.assertEqual(status, 404)
             self.assertEqual(response["error"], "order_not_found")
         finally:
             self.store.record_callback = previous
+
+    def test_stale_signed_callback_rejected(self):
+        body = json.dumps({"event_id": "evt-stale", "order_id": str(uuid.uuid4())}).encode()
+        timestamp = str(int(time.time()) - 3600)
+        signature = hmac.new(b"test-secret", timestamp.encode() + b"." + body, hashlib.sha256).hexdigest()
+        status, _, response = self.call("/v1/callbacks", "POST", body,
+                                        {"X-Relay-Signature": signature, "X-Relay-Timestamp": timestamp})
+        self.assertEqual(status, 401)
+        self.assertEqual(response["error"], "invalid_signature")
 
     def test_partner_rejects_bad_signature_and_deduplicates(self):
         partner = make_partner(0, "test-secret", "normal")

@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 LOG = logging.getLogger("relaydesk.partner")
@@ -23,7 +24,12 @@ class Handler(BaseHTTPRequestHandler):
             self.send_error(400)
             return
         raw = self.rfile.read(int(length))
-        expected = hmac.new(self.server.secret.encode(), raw, hashlib.sha256).hexdigest()
+        timestamp = self.headers.get("X-Relay-Timestamp", "")
+        if not timestamp.isdigit() or abs(time.time() - int(timestamp)) > 300:
+            self.send_error(401)
+            return
+        expected = hmac.new(self.server.secret.encode(), timestamp.encode() + b"." + raw,
+                            hashlib.sha256).hexdigest()
         if not hmac.compare_digest(self.headers.get("X-Relay-Signature", ""), expected):
             self.send_error(401)
             return

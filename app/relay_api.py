@@ -6,6 +6,7 @@ import logging
 import os
 import uuid
 import threading
+import time
 from collections import Counter
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
@@ -76,7 +77,11 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/v1/callbacks" and self.command == "POST":
             try:
                 raw, body = self.body_json()
-                digest = hmac.new(self.server.webhook_secret.encode(), raw, hashlib.sha256).hexdigest()
+                timestamp = self.headers.get("X-Relay-Timestamp", "")
+                if not timestamp.isdigit() or abs(time.time() - int(timestamp)) > 300:
+                    return self.reply(401, {"error": "invalid_signature"}, request_id, route, "stale_callback")
+                digest = hmac.new(self.server.webhook_secret.encode(), timestamp.encode() + b"." + raw,
+                                  hashlib.sha256).hexdigest()
                 signature = self.headers.get("X-Relay-Signature", "")
                 if not hmac.compare_digest(signature, digest):
                     return self.reply(401, {"error": "invalid_signature"}, request_id, route, "bad_signature")

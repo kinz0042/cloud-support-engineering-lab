@@ -16,9 +16,11 @@ def deliver(row, endpoint, secret):
     body = json.dumps({"event_id": "delivery-" + str(row["id"]),
                        "order_id": row["order_id"], "tenant_id": row["tenant_id"]},
                       separators=(",", ":")).encode()
-    signature = hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+    timestamp = str(int(time.time()))
+    signature = hmac.new(secret.encode(), timestamp.encode() + b"." + body, hashlib.sha256).hexdigest()
     request = Request(endpoint, data=body, method="POST", headers={
-        "Content-Type": "application/json", "X-Relay-Signature": signature})
+        "Content-Type": "application/json", "X-Relay-Signature": signature,
+        "X-Relay-Timestamp": timestamp})
     try:
         with urlopen(request, timeout=3) as response:
             return 200 <= response.status < 300, str(response.status), None
