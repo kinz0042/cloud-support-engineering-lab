@@ -5,7 +5,7 @@
 Status: Python foundation and Docker/PostgreSQL integration profile. Real PostgreSQL integration and Docker Compose startup, delivery, callback deduplication and database recovery pass GitHub Actions.
 This is an independent lab, not employment or production experience. No learner incidents are certified complete.
 
-[Start here](docs/start-here.md) · [Architecture](docs/architecture.md) · [Incident catalogue](incidents/README.md) · [Operations](docs/operations.md) · [Observability](docs/observability.md) · [Roadmap](docs/roadmap.md) · [Market evidence](docs/market.md) · [Assessment](docs/readiness.md)
+[Start here](docs/start-here.md) · [Architecture](docs/architecture.md) · [Incident catalogue](incidents/README.md) · [API and Postman](docs/api.md) · [Operations](docs/operations.md) · [Observability](docs/observability.md) · [Roadmap](docs/roadmap.md) · [Market evidence](docs/market.md) · [Assessment](docs/readiness.md)
 
 ## What a reviewer can verify today
 
