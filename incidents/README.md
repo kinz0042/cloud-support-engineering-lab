@@ -3,7 +3,7 @@
 | ID | Customer symptom | Status | Evidence required |
 |---|---|---|---|
 | INC-001 | Order sync receives 401 while health is green | Runnable; learner investigation pending | Redacted HTTP responses, correlated logs, hypothesis tests |
-| INC-002 | API returns 500 during order creation | Planned | Traceback, request ID, regression test |
+| INC-002 | Order listing returns 500 while liveness is green | Runnable; learner investigation pending | Correlated request log, readiness comparison, recovery and regression check |
 | INC-003 | Database connection refused | Planned | DNS/port/config tests and database health |
 | INC-004 | Webhook missed after timeout | Planned | Sender/receiver logs and delivery attempts |
 | INC-005 | Duplicate events create duplicate orders | Planned | Event IDs and idempotency test |
