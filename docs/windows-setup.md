@@ -50,4 +50,4 @@ Stop the stack with `docker compose down`. This retains the database volume; `do
 - Build or image download fails: record the exact message and check connectivity and Docker engine status.
 - A stale partner fault mode can persist in your PowerShell session. Inspect `$env:LAB_PARTNER_MODE`; remove it with `Remove-Item Env:LAB_PARTNER_MODE -ErrorAction SilentlyContinue` and recreate the partner when returning to the default mode.
 
-These commands have not yet been tested on the learner's laptop. Do not treat this document as evidence that Docker Desktop runs on that machine.
+The PowerShell prerequisite script passed a syntax check and foundation triage tests passed on a [GitHub-hosted Windows runner](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/40964603583). The full setup and Docker commands have not yet been tested on the learner's laptop. Do not treat this document as evidence that Docker Desktop runs on that machine.
