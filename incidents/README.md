@@ -8,7 +8,7 @@
 | INC-004 | Partner rejects webhook delivery | Recovery verified in CI; learner investigation pending | Sender/receiver logs and delivery attempts |
 | INC-005 | Duplicate signed callback | Verified in CI; learner investigation pending | Event IDs and idempotency test |
 | INC-006 | Queries become slow with growing data | SQL drill verified in CI; learner investigation pending | EXPLAIN ANALYZE before/after and dataset size |
-| INC-007 | OAuth refresh fails / JWT rejected | Planned | Redacted claims, clock/issuer/audience/signature checks |
+| INC-007 | JWT rejected | Verified in OAuth CI; learner investigation pending | Redacted claims, clock/issuer/audience/signature checks |
 | INC-008 | Container cannot reach database | Planned | Network inspection and service-name resolution |
 | INC-009 | DNS or TLS connection fails | Planned | Lookup, connection and certificate-chain evidence |
 | INC-010 | IAM denies private S3 object access | Planned | Caller identity, exact API, policy evaluation |
@@ -16,6 +16,8 @@
 | INC-012 | Partner rate limits delivery | Recovery verified in CI; learner investigation pending | Retry-After, bounded retries, recovery test |
 
 | INC-013 | Database readiness alert | Monitoring drill verified in CI; learner investigation pending | Gauge, alert state, logs and recovery evidence |
+
+| INC-014 | OAuth client credentials rejected | Verified in OAuth CI; learner investigation pending | Token endpoint status and redacted configuration |
 
 Planned incidents are not implemented or completed. Severity depends on demonstrated impact, not status code alone.
 
