@@ -6,4 +6,4 @@ Run the Compose stack, create a synthetic order, then run `docker compose stop d
 
 Hypotheses to test: authentication failure, API process failure, database connection failure. Explain the evidence that separates them. Create a customer update without an unsupported recovery ETA. Complete [the template](../TEMPLATE.md).
 
-Status: implemented scenario; Docker/PostgreSQL integration execution still needs verification in a Docker-capable environment. Never intentionally stop a shared or production database.
+Status: implemented scenario; Docker/PostgreSQL outage and recovery have passed the automated CI smoke test; learner investigation is pending. Never intentionally stop a shared or production database.
