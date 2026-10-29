@@ -20,7 +20,7 @@ flowchart TD
 The API writes an order and an outbox record to PostgreSQL. The worker reads the outbox and sends signed events to the mock partner. A separate signed callback endpoint can be exercised with the callback script. Prometheus scrapes API metrics; API, worker and partner emit logs. The current implementation has no reverse proxy, TLS termination or distributed tracing.
 
 
-Remaining work includes durable mock-partner deduplication, richer telemetry, and a real AWS sandbox deployment with teardown verification. Local OAuth, network diagnostics, token-expiry and webhook-recovery checks are already implemented. These simulations do not establish AWS experience or learner competence.
+The Compose mock partner persists event IDs in a separate SQLite volume, so container recreation does not erase its history. The in-memory test mode remains available. Event deduplication alone does not make arbitrary business side effects exactly-once. Remaining work includes richer telemetry and a real AWS sandbox deployment with teardown verification. Local OAuth, network diagnostics, token-expiry and webhook-recovery checks are already implemented. These simulations do not establish AWS experience or learner competence.
 
 Decisions: Python first to read and automate investigations. SQL receives substantial practice. Basic JavaScript/DevTools later for customer integration reproduction; React and Kubernetes await stronger role-specific evidence. Local default, lightweight optional services, no always-on cloud bill.
 

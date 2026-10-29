@@ -25,3 +25,5 @@ Failure drills: [database](../incidents/INC-003/brief.md), [delivery](../inciden
 ## Read-only triage
 
 Run `python scripts/triage.py --profile compose` to check liveness, readiness and an authenticated order read on the local Compose profile. For the standalone service, use `--profile foundation`. The script reports status codes and request IDs, not credentials; its assessment suggests a next investigation and does not prove a root cause. A successful order read does not verify asynchronous delivery. It uses the default synthetic keys, so deliberately changed lab credentials require manual checks.
+
+The partner uses the `partner_data` Docker volume to persist synthetic event IDs across container recreation. Removing that volume deletes its duplicate history. The SQLite store demonstrates deduplication for this lab; it does not provide a transaction with an external business system.

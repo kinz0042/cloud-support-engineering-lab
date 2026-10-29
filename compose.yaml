@@ -31,6 +31,9 @@ services:
     environment:
       LAB_WEBHOOK_SECRET: ${LAB_WEBHOOK_SECRET:-local-only-webhook-secret}
       LAB_PARTNER_MODE: ${LAB_PARTNER_MODE:-normal}
+      LAB_PARTNER_STORE_PATH: /var/lib/relaydesk/partner.sqlite3
+    volumes:
+      - partner_data:/var/lib/relaydesk
     depends_on:
       db:
         condition: service_healthy
@@ -61,3 +64,4 @@ services:
         condition: service_started
 volumes:
   pg_data:
+  partner_data:

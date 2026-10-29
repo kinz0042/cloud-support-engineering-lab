@@ -4,6 +4,7 @@ import hmac
 import json
 import logging
 import os
+import sqlite3
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -49,22 +50,38 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", "0")
             self.end_headers()
             return
-        with self.server.lock:
-            duplicate = event_id in self.server.seen
-            self.server.seen.add(event_id)
+        try:
+            if self.server.store_path:
+                with sqlite3.connect(self.server.store_path, timeout=5) as conn:
+                    cursor = conn.execute("INSERT OR IGNORE INTO seen_events(event_id) VALUES (?)", (event_id,))
+                    duplicate = cursor.rowcount == 0
+            else:
+                with self.server.lock:
+                    duplicate = event_id in self.server.seen
+                    self.server.seen.add(event_id)
+        except sqlite3.Error:
+            LOG.error(json.dumps({"event": "partner_store_unavailable"}))
+            self.send_error(503)
+            return
         LOG.info(json.dumps({"event": "partner_received", "event_id": event_id, "duplicate": duplicate}))
         self.send_response(202)
         self.send_header("Content-Length", "0")
         self.end_headers()
 
 
-def make_server(port=8082, secret=None, mode=None, host="127.0.0.1"):
+def make_server(port=8082, secret=None, mode=None, host="127.0.0.1", store_path=None):
     secret = secret if secret is not None else os.environ["LAB_WEBHOOK_SECRET"]
     mode = mode if mode is not None else os.environ.get("LAB_PARTNER_MODE", "normal")
     if not secret or mode not in ("normal", "reject", "rate_limit"):
         raise ValueError("Invalid partner configuration")
+    if store_path is None:
+        store_path = os.environ.get("LAB_PARTNER_STORE_PATH")
+    if store_path:
+        with sqlite3.connect(store_path, timeout=5) as conn:
+            conn.execute("CREATE TABLE IF NOT EXISTS seen_events (event_id TEXT PRIMARY KEY)")
     server = ThreadingHTTPServer((host, port), Handler)
     server.secret, server.mode, server.seen, server.lock = secret, mode, set(), threading.Lock()
+    server.store_path = store_path
     return server
 
 
