@@ -14,4 +14,4 @@ The [full roadmap](roadmap.md) records the details. We do one learner task at a 
 
 ## Current build status
 
-The assistant is building the lab. The learner walkthrough begins after the Docker/PostgreSQL profile is verified. VirtualBox is not required for the first lab.
+The assistant is building the lab. The learner walkthrough is deferred until the user considers the project build complete. VirtualBox is not required for the first lab.
