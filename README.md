@@ -2,7 +2,7 @@
 
 **Evidence-driven troubleshooting for a simulated B2B order-integration service.**
 
-Status: foundation release. One runnable API/authentication exercise; full SaaS stack is planned.
+Status: foundation release. Two runnable API incidents; full SaaS stack is planned.
 This is an independent lab, not employment or production experience. No learner incidents are certified complete.
 
 [Start here](docs/start-here.md) · [Architecture](docs/architecture.md) · [Incident catalogue](incidents/README.md) · [Roadmap](docs/roadmap.md) · [Market evidence](docs/market.md) · [Assessment](docs/readiness.md)
@@ -10,7 +10,7 @@ This is an independent lab, not employment or production experience. No learner 
 ## What a reviewer can verify today
 
 - A local HTTP service with a health endpoint, protected order endpoint, safe structured request logs and correlation IDs.
-- A reproducible customer authentication failure and contract tests for success and error paths.
+- Reproducible authentication and simulated dependency failures, with contract tests for success, failure and recovery.
 - A consistent investigation template separating observations, hypotheses and conclusions.
 - Explicit distinction between implemented capabilities and future work.
 
@@ -30,7 +30,7 @@ curl -i http://127.0.0.1:8080/health
 curl -i http://127.0.0.1:8080/v1/orders
 ```
 
-PowerShell users should use `curl.exe`. Follow [INC-001](incidents/INC-001/brief.md); record your own evidence before inspecting implementation.
+PowerShell users should use `curl.exe`. Follow [INC-001](incidents/INC-001/brief.md), then [INC-002](incidents/INC-002/brief.md); record your own evidence before inspecting implementation.
 Stop the server with Ctrl+C. The server binds only to localhost.
 
 ## Project structure
@@ -39,7 +39,7 @@ Stop the server with Ctrl+C. The server binds only to localhost.
 - `tests/`: real HTTP contract and log-redaction tests
 - `incidents/`: briefs, catalogue and investigation template
 - `docs/`: architecture, learning gates, market evidence and security
-- `.github/workflows/`: proposed CI configuration (not yet run on GitHub)
+- `.github/workflows/`: CI test configuration
 
 ## Skills demonstrated by the foundation
 
