@@ -6,4 +6,4 @@ Environment: disposable OAuth/Keycloak Compose profile; expected tenant Acme. In
 
 Form hypotheses before selecting a cause. Validate the correct issuer, audience, expiry and signature, then test a newly issued token and a negative control. Decoding a JWT is not signature verification. Explain what the evidence rules out and what remains uncertain. Complete [the template](../TEMPLATE.md), including an initial customer update and engineering handoff.
 
-This is a lab simulation. CI verification of this profile should be checked before asserting it works.
+This is a lab simulation. The token failure checks passed in CI; see [verification evidence](../oauth-verification.md).
