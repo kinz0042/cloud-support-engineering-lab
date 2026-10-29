@@ -1,5 +1,13 @@
 name: PostgreSQL integration
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - '**/*.md'
+      - 'postman/**'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - 'postman/**'
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
