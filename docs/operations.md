@@ -1,6 +1,6 @@
 # RelayDesk operations (Docker profile)
 
-Prerequisites: Docker Engine with Compose; about 4 GB free RAM recommended, not yet measured. The Docker profile is a local synthetic system. A GitHub Actions job has verified the PostgreSQL schema, order/outbox writes, tenant separation, callback uniqueness and delivery functions against a real Postgres service. Full Compose startup has not been executed in the authoring workspace, so container networking and service startup still need verification.
+Prerequisites: Docker Engine with Compose; about 4 GB free RAM recommended, not yet measured. The Docker profile is a local synthetic system. A GitHub Actions job has verified the PostgreSQL schema, order/outbox writes, tenant separation, callback uniqueness and delivery functions against a real Postgres service. Full Compose startup, delivery, callback deduplication and database recovery have passed in GitHub Actions; laptop-specific behavior still needs checking.
 
 ```sh
 docker compose up -d --build
