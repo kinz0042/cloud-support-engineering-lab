@@ -1,6 +1,6 @@
 # RelayDesk operations (Docker profile)
 
-Prerequisites: Docker Engine with Compose; about 4 GB free RAM recommended, not yet measured. The Docker profile is a local synthetic system. It was developed without a Docker runtime in the authoring workspace; the actual Compose startup and PostgreSQL migration must be verified in a Docker-capable environment before claiming end-to-end success.
+Prerequisites: Docker Engine with Compose; about 4 GB free RAM recommended, not yet measured. The Docker profile is a local synthetic system. A GitHub Actions job has verified the PostgreSQL schema, order/outbox writes, tenant separation, callback uniqueness and delivery functions against a real Postgres service. Full Compose startup has not been executed in the authoring workspace, so container networking and service startup still need verification.
 
 ```sh
 docker compose up -d --build

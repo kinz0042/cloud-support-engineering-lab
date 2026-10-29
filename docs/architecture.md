@@ -4,9 +4,9 @@
 
 A customer client calls a loopback HTTP server. `/health` checks liveness; `/ready` checks the synthetic order dependency. `/v1/orders` checks a bearer credential and reads synthetic data through an order store interface. When the store is unavailable, the authorized request returns a generic 500 and the server records a reason with the same request ID. Each GET receives a generated correlation ID, returned to the client and recorded in structured logs. Storage is still static; no database has been implemented.
 
-## RelayDesk Docker profile (implemented in code; container execution unverified)
+## RelayDesk Docker profile (database integration verified in CI; Compose startup unverified)
 
-A simulated B2B order integration service. Two synthetic tenants submit orders with separate demonstration keys. The API stores each order and one outbox delivery in the same PostgreSQL transaction. A worker leases due deliveries with `FOR UPDATE SKIP LOCKED`, signs a JSON payload, retries failures with capped backoff and marks exhausted attempts dead. The mock partner checks signatures and recognizes repeated event IDs. The API accepts signed callbacks and stores unique event IDs. Local HTTP tests cover tenant isolation, failure paths and signatures; PostgreSQL and Compose startup need a Docker-capable environment.
+A simulated B2B order integration service. Two synthetic tenants submit orders with separate demonstration keys. The API stores each order and one outbox delivery in the same PostgreSQL transaction. A worker leases due deliveries with `FOR UPDATE SKIP LOCKED`, signs a JSON payload, retries failures with capped backoff and marks exhausted attempts dead. The mock partner checks signatures and recognizes repeated event IDs. The API accepts signed callbacks and stores unique event IDs. Local HTTP tests cover tenant isolation, failure paths and signatures. GitHub Actions verifies real PostgreSQL operations. Compose startup still needs a Docker-capable environment.
 
 ```mermaid
 flowchart TD

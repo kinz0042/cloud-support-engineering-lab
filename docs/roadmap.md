@@ -40,6 +40,6 @@ Prepare remote-work reliability: power/internet backup, quiet call space and agr
 
 ## Current checkpoint
 
-The RelayDesk Docker/PostgreSQL profile, worker, partner simulator and incident briefs are published. Local HTTP tests pass; Docker/PostgreSQL startup is unverified in the authoring workspace. Learner has not yet investigated or explained the system; no learner incident is certified complete. The short outline is in [Start here](start-here.md).
+The RelayDesk Docker/PostgreSQL profile, worker, partner simulator and incident briefs are published. Local HTTP tests and real PostgreSQL integration pass in GitHub Actions. Full Docker Compose startup remains unverified in the authoring workspace. Learner has not yet investigated or explained the system; no learner incident is certified complete. The short outline is in [Start here](start-here.md).
 
 Next engineering gate: run the Docker profile in a Docker-capable environment, record startup evidence and repair any integration defects before counting the database and webhook incidents as verified. No paid tools or AWS required.
