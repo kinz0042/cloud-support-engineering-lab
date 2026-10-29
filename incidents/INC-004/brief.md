@@ -6,4 +6,4 @@ Start with `LAB_PARTNER_MODE=reject docker compose up -d --build` in a disposabl
 
 Inspect the queue with `docker compose exec db psql -U lab -d relaydesk -c "SELECT id,state,attempts,last_error FROM deliveries;"`. Before any replay, verify the partner's state and whether it already processed the event. Use the fixed event ID to make repeats safe. Document a customer update, engineering escalation, recovery decision, and validation. Complete [the template](../TEMPLATE.md).
 
-Status: implemented scenario; Docker/PostgreSQL integration execution still needs verification. Do not replay blindly.
+Status: implemented scenario; The injected failure and recovery passed the CI webhook step; learner investigation remains pending. See [verification evidence](../webhook-verification.md). Do not replay blindly.
