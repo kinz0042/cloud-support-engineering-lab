@@ -90,4 +90,19 @@ diagnostic = subprocess.run(['python3', 'scripts/triage.py', '--profile', 'compo
                             capture_output=True, text=True, check=True)
 report = json.loads(diagnostic.stdout)
 assert report['health']['status'] == report['readiness']['status'] == report['orders']['status'] == 200
+# After the recovery checks, create a second Acme order and reuse the same signed
+# event ID against it. The API must reject this collision, preserving the original.
+_, second = call('/v1/orders', 'POST', b'{"external_id":"ci-collision-order"}', 'acme-local-key')
+conflicting = json.dumps({'event_id': 'compose-event', 'order_id': second['order']['id']}).encode()
+new_timestamp = str(int(time.time()))
+new_signature = hmac.new(b'local-only-webhook-secret', new_timestamp.encode() + b'.' + conflicting,
+                         hashlib.sha256).hexdigest()
+try:
+    call('/v1/callbacks', 'POST', conflicting,
+         headers={'X-Relay-Signature': new_signature, 'X-Relay-Timestamp': new_timestamp})
+    raise AssertionError('Event collision unexpectedly accepted')
+except HTTPError as error:
+    assert error.code == 409
+    assert json.load(error)['error'] == 'event_id_conflict'
+assert call('/v1/callbacks', 'POST', callback, headers=headers)[1]['duplicate']
 print('Compose API, tenant isolation, order replay, delivery, callback deduplication and database recovery passed')
