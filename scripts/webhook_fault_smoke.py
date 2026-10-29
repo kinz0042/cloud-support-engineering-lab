@@ -36,9 +36,9 @@ def await_state(order_id, predicate, description, seconds=45):
     raise SystemExit(description + ': ' + state(order_id))
 
 for mode, code in [('reject', '503'), ('rate_limit', '429')]:
-    partner(mode)
-    order_id = create_order('ci-' + mode + '-' + str(uuid.uuid4()))
     try:
+        partner(mode)
+        order_id = create_order('ci-' + mode + '-' + str(uuid.uuid4()))
         await_state(order_id, lambda value: value.endswith(':' + code), mode + ' failure not observed')
     finally:
         partner('normal')
