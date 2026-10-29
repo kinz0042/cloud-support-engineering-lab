@@ -32,4 +32,4 @@ Document a customer update that separates order acceptance from notification del
 
 ## Verification status
 
-The automated drill is `scripts/monitoring_smoke.py`; it deliberately stops and restores the worker in disposable CI. Live alert and recovery verification is pending for this change. Learner investigation remains pending.
+The automated drill is `scripts/monitoring_smoke.py`; it deliberately stops and restores the worker in disposable CI. Live alert and delivery recovery passed in [Compose CI](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/40969544730). See [verification details](verification.md). Learner investigation remains pending.
