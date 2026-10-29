@@ -11,4 +11,4 @@ docker compose exec api python -c "import socket; print(socket.getaddrinfo('miss
 
 The second command should fail; capture the error. These are read-only checks and do not modify the network. A name resolving does not prove the database accepts connections or credentials. Cross-check readiness, container state and logs. Complete [the template](../TEMPLATE.md) with a customer update and engineering handoff. No real customer or production network is involved.
 
-Status: diagnostic scenario authored; container checks await CI verification.
+Status: DNS success and failure checks passed in the Compose CI network step; learner investigation pending. [CI run](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/40960442415).
