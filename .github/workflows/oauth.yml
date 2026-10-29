@@ -1,0 +1,33 @@
+name: OAuth end-to-end
+on:
+  push:
+    paths-ignore:
+      - '**/*.md'
+      - 'postman/**'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - 'postman/**'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  oauth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Start OAuth lab stack
+        run: docker compose -f compose.yaml -f compose.auth.yaml up -d --build
+      - name: Create fixture and verify base API
+        run: python3 scripts/compose_smoke.py
+      - name: Verify issued tokens and failure cases
+        run: python3 scripts/oauth_smoke.py
+      - name: Capture diagnostics on failure
+        if: failure()
+        run: docker compose -f compose.yaml -f compose.auth.yaml logs --no-color --tail=80
+      - name: Remove disposable lab
+        if: always()
+        run: docker compose -f compose.yaml -f compose.auth.yaml down -v
