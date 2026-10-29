@@ -1,0 +1,117 @@
+{
+  "info": {
+    "name": "RelayDesk OAuth troubleshooting",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Local synthetic client credentials only. Tokens last 20 seconds. Never save real secrets or tokens to a shared collection."
+  },
+  "variable": [
+    {
+      "key": "identity_url",
+      "value": "http://127.0.0.1:8085"
+    },
+    {
+      "key": "gateway_url",
+      "value": "http://127.0.0.1:8083"
+    },
+    {
+      "key": "client_id",
+      "value": "acme-client"
+    },
+    {
+      "key": "client_secret",
+      "value": "acme-client-local-secret"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Obtain demo access token",
+      "request": {
+        "method": "POST",
+        "url": "{{identity_url}}/realms/relaydesk/protocol/openid-connect/token",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "grant_type",
+              "value": "client_credentials"
+            },
+            {
+              "key": "client_id",
+              "value": "{{client_id}}"
+            },
+            {
+              "key": "client_secret",
+              "value": "{{client_secret}}"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Token issued\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) { pm.collectionVariables.set(\"access_token\", pm.response.json().access_token); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Call orders with demo token",
+      "request": {
+        "method": "GET",
+        "url": "{{gateway_url}}/v1/orders",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Orders accessible\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Gateway request ID\", function () { pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.ok; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject missing token",
+      "request": {
+        "method": "GET",
+        "url": "{{gateway_url}}/v1/orders",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Missing token rejected\", function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
