@@ -47,8 +47,9 @@ def main():
     args = parser.parse_args()
     base = BASES[args.profile]
     health = probe(base, "/health")
-    ready = probe(base, "/ready") if args.profile == "compose" else None
-    orders = probe(base, "/v1/orders", "acme-local-key")
+    ready = probe(base, "/ready")
+    token = "acme-local-key" if args.profile == "compose" else "lab-demo-token-not-a-secret"
+    orders = probe(base, "/v1/orders", token)
     print(json.dumps({"profile": args.profile, "health": health, "readiness": ready,
                       "orders": orders, "assessment": assess(health, ready, orders)}, indent=2))
     # Non-zero indicates an incomplete or failing check, not a confirmed root cause.
