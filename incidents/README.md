@@ -7,7 +7,7 @@
 | INC-003 | Database connection refused | Docker drill; integration unverified | DNS/port/config tests and database health |
 | INC-004 | Partner rejects webhook delivery | Docker drill; integration unverified | Sender/receiver logs and delivery attempts |
 | INC-005 | Duplicate signed callback | Docker drill; integration unverified | Event IDs and idempotency test |
-| INC-006 | Queries become slow with growing data | SQL drill authored; CI verification pending | EXPLAIN ANALYZE before/after and dataset size |
+| INC-006 | Queries become slow with growing data | SQL drill verified in CI; learner investigation pending | EXPLAIN ANALYZE before/after and dataset size |
 | INC-007 | OAuth refresh fails / JWT rejected | Planned | Redacted claims, clock/issuer/audience/signature checks |
 | INC-008 | Container cannot reach database | Planned | Network inspection and service-name resolution |
 | INC-009 | DNS or TLS connection fails | Planned | Lookup, connection and certificate-chain evidence |
@@ -16,3 +16,5 @@
 | INC-012 | Partner rate limits delivery | Docker drill; integration unverified | Retry-After, bounded retries, recovery test |
 
 Planned incidents are not implemented or completed. Severity depends on demonstrated impact, not status code alone.
+
+| INC-013 | Database readiness alert | Monitoring drill implemented; live alert test pending | Gauge, alert state, logs and recovery evidence |
