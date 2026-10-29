@@ -66,6 +66,8 @@ class PostgreSQLIntegration(unittest.TestCase):
             success, code, retry = deliver(row, endpoint, "ci-secret")
             self.assertEqual((success, code, retry), (True, "202", None))
             self.assertEqual(relay_store.finish_delivery(row["id"], row["attempts"], True), "delivered")
+            with self.assertRaises(relay_store.LeaseLost):
+                relay_store.finish_delivery(row["id"], row["attempts"], False, "late-worker")
             self.assertEqual(partner.seen, {"delivery-" + str(row["id"])})
         finally:
             partner.shutdown()
