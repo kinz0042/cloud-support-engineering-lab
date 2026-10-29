@@ -3,3 +3,10 @@ __pycache__/
 .env
 .venv/
 private-evidence/
+
+# Local Terraform state and plans can contain sensitive infrastructure details.
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfplan
