@@ -5,7 +5,7 @@
 Status: Python foundation and Docker/PostgreSQL integration profile. Real PostgreSQL integration and Docker Compose startup, delivery, callback deduplication and database recovery pass GitHub Actions.
 This is an independent lab, not employment or production experience. No learner incidents are certified complete.
 
-[Start here](docs/start-here.md) · [Architecture](docs/architecture.md) · [Incident catalogue](incidents/README.md) · [Operations](docs/operations.md) · [Roadmap](docs/roadmap.md) · [Market evidence](docs/market.md) · [Assessment](docs/readiness.md)
+[Start here](docs/start-here.md) · [Architecture](docs/architecture.md) · [Incident catalogue](incidents/README.md) · [Operations](docs/operations.md) · [Observability](docs/observability.md) · [Roadmap](docs/roadmap.md) · [Market evidence](docs/market.md) · [Assessment](docs/readiness.md)
 
 ## What a reviewer can verify today
 
@@ -13,7 +13,7 @@ This is an independent lab, not employment or production experience. No learner 
 - A reproducible customer authentication failure and contract tests for success and error paths.
 - A consistent investigation template separating observations, hypotheses and conclusions.
 - Explicit distinction between implemented capabilities and future work.
-- A Docker profile with synthetic tenants, PostgreSQL, a worker and signed webhooks. PostgreSQL and full Compose smoke checks have passed on GitHub Actions.
+- A Docker profile with synthetic tenants, PostgreSQL, a worker and signed webhooks. An optional Prometheus profile adds readiness monitoring and alert rules. PostgreSQL and full Compose smoke checks have passed on GitHub Actions.
 
 ## Run the foundation
 
