@@ -23,6 +23,8 @@ jobs:
         run: docker compose up --build -d
       - name: Verify API and asynchronous delivery
         run: python3 scripts/compose_smoke.py
+      - name: Verify webhook failure recovery
+        run: python3 scripts/webhook_fault_smoke.py
       - name: Validate SQL performance drill
         run: docker compose exec -T db psql -v ON_ERROR_STOP=1 -U lab -d relaydesk < sql/slow_orders.sql
       - name: Start and validate monitoring
