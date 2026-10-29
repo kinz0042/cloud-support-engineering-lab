@@ -30,3 +30,7 @@ Next delivery order:
 Decisions: Python first to read and automate investigations. SQL receives substantial practice. Basic JavaScript/DevTools later for customer integration reproduction; React and Kubernetes await stronger role-specific evidence. Local default, lightweight optional services, no always-on cloud bill.
 
 Resource target (unmeasured): core containers comfortably below 4 GB RAM; measure before adding telemetry. Current laptop/OS must be rechecked before installation.
+
+## Optional OAuth profile
+
+Keycloak issues synthetic client-credentials tokens. An OAuth gateway validates JWT signature, issuer, audience and expiry, maps the verified tenant claim to the local API credential and forwards to the API. It adds a second request ID for tracing. This profile is local-only and uses an HTTP development identity provider. See [OAuth lab](oauth.md).
