@@ -1,0 +1,191 @@
+{
+  "info": {
+    "name": "RelayDesk support investigations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Synthetic local-only requests. Never import real credentials into a shared collection."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8081"
+    },
+    {
+      "key": "acme_key",
+      "value": "acme-local-key"
+    },
+    {
+      "key": "orbit_key",
+      "value": "orbit-local-key"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/health"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected HTTP status\", function () { pm.expect([200]).to.include(pm.response.code); });",
+              "pm.test(\"Request ID returned\", function () { pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.ok; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Database readiness",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/ready"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected HTTP status\", function () { pm.expect([200]).to.include(pm.response.code); });",
+              "pm.test(\"Request ID returned\", function () { pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.ok; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders without credentials",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/v1/orders"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected HTTP status\", function () { pm.expect([401]).to.include(pm.response.code); });",
+              "pm.test(\"Request ID returned\", function () { pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.ok; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders with incorrect credential",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer wrong-demo-key"
+          }
+        ],
+        "url": "{{base_url}}/v1/orders"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected HTTP status\", function () { pm.expect([401]).to.include(pm.response.code); });",
+              "pm.test(\"Request ID returned\", function () { pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.ok; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List Acme orders",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{acme_key}}"
+          }
+        ],
+        "url": "{{base_url}}/v1/orders"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected HTTP status\", function () { pm.expect([200]).to.include(pm.response.code); });",
+              "pm.test(\"Request ID returned\", function () { pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.ok; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List Orbit orders",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{orbit_key}}"
+          }
+        ],
+        "url": "{{base_url}}/v1/orders"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected HTTP status\", function () { pm.expect([200]).to.include(pm.response.code); });",
+              "pm.test(\"Request ID returned\", function () { pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.ok; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create or replay Acme order",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{acme_key}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/v1/orders",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"external_id\":\"postman-example-001\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Expected HTTP status\", function () { pm.expect([200,201]).to.include(pm.response.code); });",
+              "pm.test(\"Request ID returned\", function () { pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.ok; });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
