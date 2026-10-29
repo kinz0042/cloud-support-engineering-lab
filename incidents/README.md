@@ -17,7 +17,9 @@
 | [INC-013](INC-013/brief.md) | Database readiness alert | Monitoring drill verified in CI; learner investigation pending | Gauge, alert state, logs and recovery evidence |
 | [INC-014](INC-014/brief.md) | OAuth client credentials rejected | Verified in OAuth CI; learner investigation pending | Token endpoint status and redacted configuration |
 | [INC-015](INC-015/brief.md) | Partner recovered but an exhausted delivery remains stuck | Recovery and audit verified in CI; learner investigation pending | Recipient history, inspected attempt count, replay audit and delivery recovery |
+| [INC-016](INC-016/brief.md) | API healthy while notifications stop | Implemented; live alert verification pending | Queue age, worker status, healthy API/DB, alert and delivery recovery |
 
 Planned incidents are not implemented or completed. Severity depends on demonstrated impact, not status code alone.
+
 
 
