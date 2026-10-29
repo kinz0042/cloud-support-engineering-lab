@@ -2,7 +2,7 @@
 
 ## Implemented foundation
 
-A customer client calls a loopback HTTP server. `/health` checks liveness; `/ready` checks the synthetic order dependency. `/v1/orders` checks a bearer credential and reads synthetic data through an order store interface. When the store is unavailable, the authorized request returns a generic 500 and the server records a reason with the same request ID. Each GET receives a generated correlation ID, returned to the client and recorded in structured logs. Storage is still static; no database has been implemented.
+A customer client calls a loopback HTTP server. `/health` checks liveness; `/ready` checks the synthetic order dependency. `/v1/orders` checks a bearer credential and reads synthetic data through an order store interface. When the store is unavailable, the authorized request returns a generic 500 and the server records a reason with the same request ID. Each GET receives a generated correlation ID, returned to the client and recorded in structured logs. The foundation uses static storage; the separate Docker profile below uses PostgreSQL.
 
 ## RelayDesk Docker profile (database integration and Compose smoke verified in CI)
 
