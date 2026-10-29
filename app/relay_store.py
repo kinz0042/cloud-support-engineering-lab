@@ -1,5 +1,6 @@
 """PostgreSQL persistence for the RelayDesk integration service."""
 import os
+import re
 import uuid
 
 
@@ -16,6 +17,10 @@ class CallbackConflict(Exception):
 
 
 class LeaseLost(Exception):
+    pass
+
+
+class ReplayRejected(Exception):
     pass
 
 
@@ -80,18 +85,67 @@ def claim_delivery():
 
 
 def finish_delivery(delivery_id, attempts, success, error_code=None, retry_delay=None):
-    state = "delivered" if success else "dead" if attempts >= 5 else "pending"
-    delay = retry_delay if retry_delay is not None else min(2 ** attempts, 60)
+    # Attempts stay monotonic across replays so an old worker cannot regain a lease.
+    delay = retry_delay if retry_delay is not None else min(2 ** min(attempts, 6), 60)
     with _connect() as conn:
         result = conn.execute(
-            "UPDATE deliveries SET state=%s, lease_until=NULL, last_error=%s, "
+            "UPDATE deliveries SET state=CASE WHEN %s THEN 'delivered' "
+            "WHEN attempts >= max_attempts THEN 'dead' ELSE 'pending' END, "
+            "lease_until=NULL, last_error=%s, "
             "next_attempt_at=now()+(%s * interval '1 second') "
-            "WHERE id=%s AND state='leased' AND attempts=%s RETURNING id",
-            (state, error_code, delay, delivery_id, attempts),
+            "WHERE id=%s AND state='leased' AND attempts=%s RETURNING state",
+            (success, error_code, delay, delivery_id, attempts),
         ).fetchone()
         if result is None:
             raise LeaseLost("Delivery lease no longer belongs to this attempt")
-    return state
+    return result["state"]
+
+
+def inspect_delivery(delivery_id, tenant):
+    """Read one tenant-scoped delivery and its replay history without mutating it."""
+    with _connect() as conn:
+        conn.execute("SET TRANSACTION READ ONLY")
+        row = conn.execute(
+            "SELECT id, order_id::text, tenant_id, state, attempts, max_attempts, "
+            "next_attempt_at::text, lease_until::text, last_error FROM deliveries "
+            "WHERE id=%s AND tenant_id=%s", (delivery_id, tenant)
+        ).fetchone()
+        if row is None:
+            return None
+        row["event_id"] = "delivery-" + str(row["id"])
+        row["replays"] = conn.execute(
+            "SELECT actor, reason, previous_attempts, new_max_attempts, created_at::text "
+            "FROM delivery_replay_audit WHERE delivery_id=%s ORDER BY id", (delivery_id,)
+        ).fetchall()
+    return row
+
+
+def replay_delivery(delivery_id, tenant, expected_attempts, actor, reason, recipient_checked=False):
+    """Requeue only the inspected dead delivery, preserving its stable event ID."""
+    if not recipient_checked:
+        raise ValueError("Recipient processing must be checked before replay")
+    if delivery_id < 1 or expected_attempts < 1:
+        raise ValueError("Delivery ID and expected attempts must be positive")
+    if not isinstance(actor, str) or not re.fullmatch(r"[A-Za-z0-9_.@-]{1,80}", actor):
+        raise ValueError("Actor must be a short operator label")
+    if not isinstance(reason, str) or not 10 <= len(reason.strip()) <= 240 or not reason.isprintable():
+        raise ValueError("Reason must contain 10 to 240 printable characters")
+    with _connect() as conn:
+        row = conn.execute(
+            "UPDATE deliveries SET state='pending', next_attempt_at=now(), lease_until=NULL, "
+            "max_attempts=attempts+5 WHERE id=%s AND tenant_id=%s AND state='dead' "
+            "AND attempts=%s RETURNING id, order_id::text, tenant_id, state, attempts, max_attempts",
+            (delivery_id, tenant, expected_attempts)
+        ).fetchone()
+        if row is None:
+            raise ReplayRejected("Delivery missing, not dead, or changed since inspection")
+        conn.execute(
+            "INSERT INTO delivery_replay_audit "
+            "(delivery_id, actor, reason, previous_attempts, new_max_attempts) VALUES (%s,%s,%s,%s,%s)",
+            (delivery_id, actor, reason.strip(), expected_attempts, row["max_attempts"])
+        )
+        row["event_id"] = "delivery-" + str(row["id"])
+    return row
 
 
 def record_callback(event_id, order_id):
@@ -112,3 +166,4 @@ def record_callback(event_id, order_id):
     except ForeignKeyViolation as exc:
         raise UnknownOrder() from exc
     return row is not None
+

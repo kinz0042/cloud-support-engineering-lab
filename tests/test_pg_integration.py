@@ -6,6 +6,7 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 import json
+from concurrent.futures import ThreadPoolExecutor
 
 from app.relay_api import make_server
 from app import relay_store
@@ -42,6 +43,95 @@ class PostgreSQLIntegration(unittest.TestCase):
             response = exc
         with response:
             return response.status, json.load(response)
+
+    def setUp(self):
+        # DATABASE_URL must point at a disposable integration-test database.
+        with relay_store._connect() as conn:
+            conn.execute("TRUNCATE delivery_replay_audit, received_events, deliveries, orders RESTART IDENTITY")
+
+    def exhaust_delivery(self):
+        order, _ = relay_store.create_order("acme", "replay-fixture")
+        for attempt in range(1, 6):
+            row = relay_store.claim_delivery()
+            self.assertEqual(row["attempts"], attempt)
+            state = relay_store.finish_delivery(row["id"], attempt, False, "503", retry_delay=0)
+            self.assertEqual(state, "dead" if attempt == 5 else "pending")
+        return row
+
+    def replay(self, row, **kwargs):
+        return relay_store.replay_delivery(row["id"], "acme", row["attempts"],
+                                           "ci-operator", "INC-015 recipient reviewed", True, **kwargs)
+
+    def test_dead_delivery_replay_preserves_id_and_fences_old_worker(self):
+        row = self.exhaust_delivery()
+        before = relay_store.inspect_delivery(row["id"], "acme")
+        self.assertEqual(before["state"], "dead")
+        replayed = self.replay(row)
+        self.assertEqual(replayed["attempts"], 5)
+        self.assertEqual(replayed["max_attempts"], 10)
+        current = relay_store.claim_delivery()
+        self.assertEqual(current["attempts"], 6)
+        self.assertEqual(current["id"], row["id"])
+        with self.assertRaises(relay_store.LeaseLost):
+            relay_store.finish_delivery(row["id"], 5, True)
+        self.assertEqual(relay_store.finish_delivery(current["id"], 6, True), "delivered")
+        after = relay_store.inspect_delivery(row["id"], "acme")
+        self.assertEqual(before["event_id"], after["event_id"])
+        self.assertEqual(len(after["replays"]), 1)
+        self.assertEqual(after["replays"][0]["previous_attempts"], 5)
+        self.assertIsNone(relay_store.inspect_delivery(row["id"], "orbit"))
+        with self.assertRaises(relay_store.ReplayRejected):
+            self.replay(row)
+
+    def test_replay_is_bounded_and_concurrent_requests_do_not_double_replay(self):
+        row = self.exhaust_delivery()
+        with self.assertRaises(relay_store.ReplayRejected):
+            relay_store.replay_delivery(row["id"], "orbit", 5, "ci", "wrong tenant denied", True)
+        with self.assertRaises(relay_store.ReplayRejected):
+            relay_store.replay_delivery(row["id"], "acme", 4, "ci", "stale observation denied", True)
+        def request_replay(_):
+            try:
+                self.replay(row)
+                return "accepted"
+            except relay_store.ReplayRejected:
+                return "rejected"
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(request_replay, range(2)))
+        self.assertCountEqual(results, ["accepted", "rejected"])
+        for attempt in range(6, 11):
+            current = relay_store.claim_delivery()
+            self.assertEqual(current["attempts"], attempt)
+            state = relay_store.finish_delivery(current["id"], attempt, False, "503", retry_delay=0)
+            self.assertEqual(state, "dead" if attempt == 10 else "pending")
+        self.assertIsNone(relay_store.claim_delivery())
+        self.assertEqual(len(relay_store.inspect_delivery(row["id"], "acme")["replays"]), 1)
+
+    def test_failed_audit_write_rolls_back_requeue(self):
+        from psycopg.errors import CheckViolation
+        row = self.exhaust_delivery()
+        with relay_store._connect() as conn:
+            conn.execute("ALTER TABLE delivery_replay_audit ADD CONSTRAINT ci_deny_audit CHECK (actor <> 'ci-operator')")
+        try:
+            with self.assertRaises(CheckViolation):
+                self.replay(row)
+            after = relay_store.inspect_delivery(row["id"], "acme")
+            self.assertEqual((after["state"], after["max_attempts"], after["replays"]), ("dead", 5, []))
+        finally:
+            with relay_store._connect() as conn:
+                conn.execute("ALTER TABLE delivery_replay_audit DROP CONSTRAINT ci_deny_audit")
+
+    def test_existing_database_migration_can_be_repeated_without_data_loss(self):
+        row = self.exhaust_delivery()
+        with relay_store._connect() as conn:
+            conn.execute("DROP TABLE delivery_replay_audit")
+            conn.execute("ALTER TABLE deliveries DROP COLUMN max_attempts")
+        import psycopg
+        for _ in range(2):
+            with psycopg.connect(os.environ["DATABASE_URL"], autocommit=True) as conn:
+                conn.execute(Path("db/migrations/001_delivery_replay.sql").read_text())
+        after = relay_store.inspect_delivery(row["id"], "acme")
+        self.assertEqual((after["attempts"], after["max_attempts"], after["state"]), (5, 5, "dead"))
+        self.replay(row)
 
     def test_database_outbox_tenants_and_delivery(self):
         import psycopg
@@ -90,3 +180,4 @@ class PostgreSQLIntegration(unittest.TestCase):
         with self.assertRaises(relay_store.CallbackConflict):
             relay_store.record_callback("ci-event", other_order)
         self.assertFalse(relay_store.record_callback("ci-event", order_id))
+

@@ -15,13 +15,24 @@ CREATE TABLE deliveries (
     tenant_id text NOT NULL REFERENCES tenants(id),
     state text NOT NULL DEFAULT 'pending' CHECK (state IN ('pending', 'leased', 'delivered', 'dead')),
     attempts integer NOT NULL DEFAULT 0,
+    max_attempts integer NOT NULL DEFAULT 5 CHECK (max_attempts > 0),
     next_attempt_at timestamptz NOT NULL DEFAULT now(),
     lease_until timestamptz,
     last_error text
 );
 CREATE INDEX deliveries_due_idx ON deliveries (next_attempt_at) WHERE state = 'pending';
+CREATE TABLE delivery_replay_audit (
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    delivery_id bigint NOT NULL REFERENCES deliveries(id),
+    actor text NOT NULL,
+    reason text NOT NULL,
+    previous_attempts integer NOT NULL,
+    new_max_attempts integer NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
 CREATE TABLE received_events (
     event_id text PRIMARY KEY,
     order_id uuid NOT NULL REFERENCES orders(id),
     received_at timestamptz NOT NULL DEFAULT now()
 );
+

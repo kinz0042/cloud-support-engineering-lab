@@ -12,6 +12,7 @@ This is an independent lab, not employment or production experience. No learner 
 - A local HTTP service with a health endpoint, protected order endpoint, safe structured request logs and correlation IDs.
 - A reproducible customer authentication failure and contract tests for success and error paths.
 - A read-only triage tool checks local health, readiness and authenticated order access without printing credentials.
+- A tenant-scoped operator CLI inspects deliveries and explicitly replays exhausted webhooks with an atomic audit record. See [delivery recovery](docs/delivery-recovery.md).
 - A consistent investigation template separating observations, hypotheses and conclusions.
 - Explicit distinction between implemented capabilities and future work.
 - A Docker profile with synthetic tenants, PostgreSQL, a worker and signed webhooks. An optional Prometheus profile adds readiness monitoring and alert rules. PostgreSQL and full Compose smoke checks have passed on GitHub Actions.
@@ -63,3 +64,4 @@ Synthetic customers and orders only. The demonstration credentials are public an
 ## Attribution
 
 Initial scaffold and tests were AI-assisted. Learner investigations must identify hints used and evidence personally collected. Only verified work may be described in a CV.
+

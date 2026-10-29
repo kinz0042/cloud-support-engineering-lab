@@ -2,6 +2,8 @@
 
 Prerequisites: Docker Engine with Compose; about 4 GB free RAM recommended, not yet measured. The Docker profile is a local synthetic system. A GitHub Actions job has verified the PostgreSQL schema, order/outbox writes, tenant separation, callback uniqueness and delivery functions against a real Postgres service. Full Compose startup, delivery, callback deduplication and database recovery have passed in GitHub Actions; laptop-specific behavior still needs checking.
 
+If you retain a database from before the delivery-replay feature, apply the [additive schema migration](delivery-recovery.md#existing-database-upgrade) before starting the new worker.
+
 ```sh
 docker compose up -d --build
 docker compose ps
@@ -27,3 +29,6 @@ Failure drills: [database](../incidents/INC-003/brief.md), [delivery](../inciden
 Run `python scripts/triage.py --profile compose` to check liveness, readiness and an authenticated order read on the local Compose profile. For the standalone service, use `--profile foundation`. The script reports status codes and request IDs, not credentials; its assessment suggests a next investigation and does not prove a root cause. A successful order read does not verify asynchronous delivery. It uses the default synthetic keys, so deliberately changed lab credentials require manual checks.
 
 The partner uses the `partner_data` Docker volume to persist synthetic event IDs across container recreation. Removing that volume deletes its duplicate history. The SQLite store demonstrates deduplication for this lab; it does not provide a transaction with an external business system.
+
+For exhausted retries, use the [delivery inspection and recovery runbook](delivery-recovery.md). Replaying a dead delivery requires a recipient review, the inspected attempt count and an audit reason; it is not automatically safe because the partner has recovered.
+
