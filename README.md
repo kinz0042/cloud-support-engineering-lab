@@ -5,7 +5,7 @@
 Status: Python foundation and Docker/PostgreSQL integration profile. Real PostgreSQL integration and Docker Compose startup, delivery, callback deduplication and database recovery pass GitHub Actions.
 This is an independent lab, not employment or production experience. No learner incidents are certified complete.
 
-[Start here](docs/start-here.md) · [Architecture](docs/architecture.md) · [Incident catalogue](incidents/README.md) · [Support playbook](docs/support-playbook.md) · [API and Postman](docs/api.md) · [OAuth lab](docs/oauth.md) · [AWS sandbox](cloud/aws-s3/README.md) · [Operations](docs/operations.md) · [Observability](docs/observability.md) · [Networking](docs/networking.md) · [Roadmap](docs/roadmap.md) · [Market evidence](docs/market.md) · [Assessment](docs/readiness.md)
+[Start here](docs/start-here.md) · [Architecture](docs/architecture.md) · [Incident catalogue](incidents/README.md) · [Support playbook](docs/support-playbook.md) · [API and Postman](docs/api.md) · [OAuth lab](docs/oauth.md) · [AWS sandbox](cloud/aws-s3/README.md) · [Operations](docs/operations.md) · [Observability](docs/observability.md) · [Networking](docs/networking.md) · [Roadmap](docs/roadmap.md) · [Market evidence](docs/market.md) · [Readiness](docs/readiness.md) · [Practice assessment](docs/support-readiness-assessment.md)
 
 ## What a reviewer can verify today
 
@@ -42,7 +42,7 @@ Stop the server with Ctrl+C. The server binds only to localhost.
 - `docs/`: architecture, learning gates, market evidence and security
 - `db/`, `compose.yaml`: PostgreSQL schema and local service topology
 - `docs/operations.md`: Docker setup and failure drills
-- `.github/workflows/`: Python HTTP tests
+- `.github/workflows/`: API, PostgreSQL, Compose, OAuth and Terraform checks
 
 ## Skills demonstrated by the foundation
 
