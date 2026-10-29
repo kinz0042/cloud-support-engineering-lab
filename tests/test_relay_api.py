@@ -100,6 +100,18 @@ class RelayTests(unittest.TestCase):
         self.store.available = True
         self.assertEqual(self.call("/ready")[0], 200)
 
+    def test_metrics_report_database_readiness_without_secrets(self):
+        self.call("/v1/orders", headers={"Authorization": "Bearer acme-key"})
+        self.store.available = False
+        with urlopen(self.url + "/metrics", timeout=3) as response:
+            metrics = response.read().decode()
+        self.assertIn("relaydesk_database_ready 0", metrics)
+        self.assertIn('relaydesk_requests_total{route="/v1/orders",status="200"}', metrics)
+        self.assertNotIn("acme-key", metrics)
+        self.store.available = True
+        with urlopen(self.url + "/metrics", timeout=3) as response:
+            self.assertIn("relaydesk_database_ready 1", response.read().decode())
+
     def test_invalid_json_and_secret_rejected(self):
         status, _, body = self.call("/v1/orders", "POST", b"not-json",
                                     {"Authorization": "Bearer acme-key"})
