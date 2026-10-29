@@ -11,7 +11,7 @@
 | INC-007 | JWT rejected | Verified in OAuth CI; learner investigation pending | Redacted claims, clock/issuer/audience/signature checks |
 | INC-008 | Container cannot reach database | Planned | Network inspection and service-name resolution |
 | INC-009 | DNS or TLS connection fails | Planned | Lookup, connection and certificate-chain evidence |
-| INC-010 | IAM denies private S3 object access | Planned | Caller identity, exact API, policy evaluation |
+| INC-010 | IAM denies private S3 object access | Designed; AWS deployment and investigation pending | Caller identity, exact API, policy evaluation |
 | INC-011 | Security group blocks application traffic | Planned | Flow/path tests and narrowly scoped rule change |
 | INC-012 | Partner rate limits delivery | Recovery verified in CI; learner investigation pending | Retry-After, bounded retries, recovery test |
 
