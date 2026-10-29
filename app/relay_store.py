@@ -11,6 +11,10 @@ class UnknownOrder(Exception):
     pass
 
 
+class LeaseLost(Exception):
+    pass
+
+
 def _connect():
     import psycopg
     from psycopg.rows import dict_row
@@ -75,11 +79,14 @@ def finish_delivery(delivery_id, attempts, success, error_code=None, retry_delay
     state = "delivered" if success else "dead" if attempts >= 5 else "pending"
     delay = retry_delay if retry_delay is not None else min(2 ** attempts, 60)
     with _connect() as conn:
-        conn.execute(
+        result = conn.execute(
             "UPDATE deliveries SET state=%s, lease_until=NULL, last_error=%s, "
-            "next_attempt_at=now()+(%s * interval '1 second') WHERE id=%s",
-            (state, error_code, delay, delivery_id),
-        )
+            "next_attempt_at=now()+(%s * interval '1 second') "
+            "WHERE id=%s AND state='leased' AND attempts=%s RETURNING id",
+            (state, error_code, delay, delivery_id, attempts),
+        ).fetchone()
+        if result is None:
+            raise LeaseLost("Delivery lease no longer belongs to this attempt")
     return state
 
 
