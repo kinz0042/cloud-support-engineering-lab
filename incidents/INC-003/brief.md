@@ -14,4 +14,4 @@ In a disposable stack, start with `docker compose up -d --build`, then check `cu
 
 A healthy process with failed readiness supports a dependency failure; it does not alone prove the exact cause. Test authentication separately and use container status and logs to distinguish the stopped database from a bad credential. Restore using `docker compose start db`; wait for readiness, check an authenticated read and a new synthetic write, and confirm tenant isolation. Record evidence and uncertainties in the incident template.
 
-The [Compose integration check](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/40964519832) also exercises the triage command during a stopped-database scenario and after recovery; review the run outcome before treating it as verified.
+The [Compose integration check](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/40964603743) passed the triage checks during a stopped-database scenario and after recovery.
