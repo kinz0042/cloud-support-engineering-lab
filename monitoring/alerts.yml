@@ -1,0 +1,24 @@
+groups:
+  - name: relaydesk
+    rules:
+      - alert: RelayDeskApiUnreachable
+        expr: up{job="relaydesk"} == 0
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: RelayDesk metrics endpoint is unreachable
+      - alert: RelayDeskDatabaseUnavailable
+        expr: relaydesk_database_ready == 0
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: RelayDesk cannot connect to PostgreSQL
+      - alert: RelayDeskServerErrors
+        expr: sum(increase(relaydesk_requests_total{status=~"5.."}[5m])) > 3
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: More than three server errors observed in five minutes
