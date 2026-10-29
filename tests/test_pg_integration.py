@@ -86,3 +86,7 @@ class PostgreSQLIntegration(unittest.TestCase):
             worker.join()
         self.assertTrue(relay_store.record_callback("ci-event", order_id))
         self.assertFalse(relay_store.record_callback("ci-event", order_id))
+        other_order = self.call("/v1/orders", token="ci-orbit")[1]["orders"][0]["id"]
+        with self.assertRaises(relay_store.CallbackConflict):
+            relay_store.record_callback("ci-event", other_order)
+        self.assertFalse(relay_store.record_callback("ci-event", order_id))

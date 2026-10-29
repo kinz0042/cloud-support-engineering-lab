@@ -11,6 +11,10 @@ class UnknownOrder(Exception):
     pass
 
 
+class CallbackConflict(Exception):
+    pass
+
+
 class LeaseLost(Exception):
     pass
 
@@ -99,6 +103,12 @@ def record_callback(event_id, order_id):
                 "INSERT INTO received_events (event_id, order_id) VALUES (%s, %s) "
                 "ON CONFLICT (event_id) DO NOTHING RETURNING event_id", (event_id, order_id)
             ).fetchone()
+            if row is None:
+                existing = conn.execute(
+                    "SELECT order_id::text AS order_id FROM received_events WHERE event_id = %s", (event_id,)
+                ).fetchone()
+                if existing is None or existing["order_id"] != order_id:
+                    raise CallbackConflict("Event ID belongs to another order")
     except ForeignKeyViolation as exc:
         raise UnknownOrder() from exc
     return row is not None

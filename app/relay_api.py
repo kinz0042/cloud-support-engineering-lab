@@ -96,6 +96,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(400, {"error": "invalid_request"}, request_id, route, "bad_body")
             try:
                 fresh = self.server.store.record_callback(event_id, order_id)
+            except store.CallbackConflict:
+                return self.reply(409, {"error": "event_id_conflict"}, request_id, route, "callback_conflict")
             except store.UnknownOrder:
                 return self.reply(404, {"error": "order_not_found"}, request_id, route, "unknown_order")
             except Exception:

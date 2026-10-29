@@ -10,14 +10,14 @@ from urllib.request import Request, urlopen
 from app.relay_api import make_server
 from app.partner import make_server as make_partner
 from app.worker import deliver
-from app.relay_store import UnknownOrder
+from app.relay_store import UnknownOrder, CallbackConflict
 
 
 class FakeStore:
     def __init__(self):
         self.available = True
         self.orders = {}
-        self.events = set()
+        self.events = {}
 
     def ready(self):
         return self.available
@@ -41,9 +41,12 @@ class FakeStore:
     def record_callback(self, event_id, order_id):
         if not self.available:
             raise RuntimeError("database down")
-        fresh = event_id not in self.events
-        self.events.add(event_id)
-        return fresh
+        if event_id in self.events:
+            if self.events[event_id] != order_id:
+                raise CallbackConflict()
+            return False
+        self.events[event_id] = order_id
+        return True
 
 
 class RelayTests(unittest.TestCase):
@@ -131,6 +134,18 @@ class RelayTests(unittest.TestCase):
         self.assertEqual(first[0], 202)
         self.assertFalse(first[2]["duplicate"])
         self.assertTrue(second[2]["duplicate"])
+
+    def test_event_id_reused_for_another_order_returns_conflict(self):
+        timestamp = str(int(time.time()))
+        def signed(order_id):
+            body = json.dumps({"event_id": "evt-shared", "order_id": order_id}).encode()
+            signature = hmac.new(b"test-secret", timestamp.encode() + b"." + body, hashlib.sha256).hexdigest()
+            return self.call("/v1/callbacks", "POST", body,
+                             {"X-Relay-Signature": signature, "X-Relay-Timestamp": timestamp})
+        self.assertEqual(signed(str(uuid.uuid4()))[0], 202)
+        conflict = signed(str(uuid.uuid4()))
+        self.assertEqual(conflict[0], 409)
+        self.assertEqual(conflict[2]["error"], "event_id_conflict")
 
     def test_signed_callback_unknown_order_is_not_database_outage(self):
         body = json.dumps({"event_id": "evt-unknown", "order_id": str(uuid.uuid4())}).encode()
