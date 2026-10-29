@@ -3,7 +3,7 @@ import threading
 import unittest
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
-from app.server import make_server
+from app.server import OrderStore, make_server
 
 class ContractTests(unittest.TestCase):
     @classmethod
@@ -59,3 +59,24 @@ class ContractTests(unittest.TestCase):
     def test_empty_token_rejected(self):
         with self.assertRaises(ValueError):
             make_server(0, "")
+
+    def test_dependency_failure_is_correlated_and_recovers(self):
+        # Change the same server's dependency to simulate an outage and recovery.
+        store = self.server.order_store
+        self.server.order_store = OrderStore(available=False)
+        try:
+            self.assertEqual(self.request("/health")[0], 200)
+            self.assertEqual(self.request("/ready")[0], 503)
+            with self.assertLogs("support_lab", level="INFO") as captured:
+                status, headers, body = self.request("/v1/orders", "Bearer test-only-token")
+            self.assertEqual(status, 500)
+            self.assertEqual(body["error"], "internal_error")
+            self.assertNotIn("orders", body)
+            self.assertEqual(headers["X-Request-ID"], body["request_id"])
+            self.assertIn(body["request_id"], " ".join(captured.output))
+            self.assertIn("order_store_unavailable", " ".join(captured.output))
+            self.assertEqual(self.request("/v1/orders")[0], 401)
+        finally:
+            self.server.order_store = store
+        self.assertEqual(self.request("/ready")[0], 200)
+        self.assertEqual(self.request("/v1/orders", "Bearer test-only-token")[0], 200)
