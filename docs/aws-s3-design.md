@@ -1,6 +1,6 @@
 # AWS S3 and IAM scenario — design boundary
 
-Status: planned; no AWS account has been connected and no AWS resources have been created or verified. The aim is a disposable, private S3 bucket and two synthetic object prefixes, with an intentionally narrow IAM policy. A customer reports AccessDenied when requesting an object outside the allowed prefix.
+Status: Terraform scaffold authored and statically validated in CI; no AWS account has been connected and no AWS resources have been created or verified. The aim is a disposable, private S3 bucket and two synthetic object prefixes, with an intentionally narrow IAM policy. A customer reports AccessDenied when requesting an object outside the allowed prefix.
 
 Before any deployment, choose a dedicated AWS sandbox, an explicit spending limit and region, set budget alerts, review the plan, and obtain the account owner's authorization. Budget alerts notify but do not enforce a hard spending cap. Do not deploy into a production account or use real customer data. Cost and cleanup depend on region, storage, requests, logs, and any added resources.
 
