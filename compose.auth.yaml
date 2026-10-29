@@ -1,0 +1,28 @@
+services:
+  identity:
+    image: quay.io/keycloak/keycloak:26.8.1
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_HOSTNAME: http://identity:8080
+      KC_BOOTSTRAP_ADMIN_USERNAME: lab-admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: lab-admin-only
+    mem_limit: 1g
+    volumes:
+      - ./auth/relaydesk-realm.json:/opt/keycloak/data/import/relaydesk-realm.json:ro
+    ports:
+      - "127.0.0.1:8085:8080"
+  oauth-gateway:
+    build: .
+    command: ["python", "-m", "app.oauth_gateway"]
+    environment:
+      OIDC_ISSUER: http://identity:8080/realms/relaydesk
+      OIDC_AUDIENCE: relay-api
+      OIDC_JWKS_URL: http://identity:8080/realms/relaydesk/protocol/openid-connect/certs
+      LAB_TENANT_KEYS: '{"acme":"acme-local-key","orbit":"orbit-local-key"}'
+    ports:
+      - "127.0.0.1:8083:8083"
+    depends_on:
+      api:
+        condition: service_started
+      identity:
+        condition: service_started
