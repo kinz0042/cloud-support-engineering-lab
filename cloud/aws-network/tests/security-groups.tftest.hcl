@@ -4,13 +4,15 @@ mock_provider "aws" {
 }
 
 override_resource {
-  target = aws_security_group.client
-  values = { id = "sg-00000000000000001" }
+  target          = aws_security_group.client
+  override_during = plan
+  values          = { id = "sg-00000000000000001" }
 }
 
 override_resource {
-  target = aws_security_group.service
-  values = { id = "sg-00000000000000002" }
+  target          = aws_security_group.service
+  override_during = plan
+  values          = { id = "sg-00000000000000002" }
 }
 
 variables {
