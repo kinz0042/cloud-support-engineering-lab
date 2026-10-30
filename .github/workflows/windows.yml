@@ -13,6 +13,8 @@ on:
       - 'tests/test_paginate_orders.py'
       - 'tests/test_relay_api.py'
       - 'tests/test_http_request_body.py'
+      - 'tests/test_worker_retry.py'
+      - 'tests/test_worker_destination.py'
       - 'tests/test_oauth_gateway_pagination.py'
       - 'tests/test_triage.py'
       - '.github/workflows/windows.yml'
@@ -29,6 +31,8 @@ on:
       - 'tests/test_paginate_orders.py'
       - 'tests/test_relay_api.py'
       - 'tests/test_http_request_body.py'
+      - 'tests/test_worker_retry.py'
+      - 'tests/test_worker_destination.py'
       - 'tests/test_oauth_gateway_pagination.py'
       - 'tests/test_triage.py'
       - '.github/workflows/windows.yml'
@@ -69,6 +73,8 @@ jobs:
         run: python -m unittest discover -s tests -p test_relay_api.py -v
       - name: Check incomplete request body handling
         run: python -m unittest discover -s tests -p test_http_request_body.py -v
+      - name: Check webhook destination and retry handling
+        run: python -m unittest discover -s tests -p "test_worker*.py" -v
       - name: Check OAuth gateway pagination behavior
         run: python -m unittest discover -s tests -p test_oauth_gateway_pagination.py -v
 

@@ -36,6 +36,7 @@ The API creates the order and delivery record in one transaction. The worker lea
 | Object access denied | [Offline object-access exercise](cloud/aws-s3/offline-exercise.md); actual S3 investigation pending |
 | Integration sees only the first 100 orders | [Cursor pagination investigation](incidents/INC-021/brief.md) and [verification](incidents/INC-021/verification.md) |
 | Order submission stalls before reaching the database | [Incomplete HTTP request body and timeout investigation](incidents/INC-022/brief.md) |
+| Partner redirects a signed webhook | [Destination-bound delivery and safe recovery](incidents/INC-023/brief.md) |
 
 These are synthetic exercises. CI evidence proves that specified tests ran; it does not prove that the learner independently diagnosed the incidents. Each investigation has a [recording template](incidents/TEMPLATE.md) for actual evidence, competing hypotheses, root cause, validation and communication.
 

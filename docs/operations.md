@@ -34,3 +34,5 @@ The partner uses the `partner_data` Docker volume to persist synthetic event IDs
 
 For exhausted retries, use the [delivery inspection and recovery runbook](delivery-recovery.md). Replaying a dead delivery requires a recipient review, the inspected attempt count and an audit reason; it is not automatically safe because the partner has recovered.
 
+The worker sends to its configured internal mock partner directly, without environment proxies, and records a redirect response as a failed attempt instead of following it. It accepts only numeric `Retry-After` delta-seconds for a 429, capped at 300 seconds; HTTP-date and invalid values fall back to the worker's normal bounded backoff. See [INC-023](../incidents/INC-023/brief.md) for investigation and safe recovery.
+

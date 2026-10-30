@@ -16,7 +16,7 @@ def response_error(code, retry=None):
 
 class RetryClassificationTests(unittest.TestCase):
     def check_error(self, error, expected):
-        with patch("app.worker.urlopen", side_effect=error):
+        with patch("app.worker.OPENER.open", side_effect=error):
             self.assertEqual(deliver(ROW, URL, "secret"), expected)
 
     def test_numeric_retry_after_is_bounded(self):
@@ -24,6 +24,15 @@ class RetryClassificationTests(unittest.TestCase):
 
     def test_invalid_retry_after_falls_back(self):
         self.check_error(response_error(429, "not-a-number"), (False, "429", None))
+        self.check_error(response_error(429, "１２"), (False, "429", None))
+        self.check_error(response_error(429, "9" * 5000), (False, "429", 300))
+        self.check_error(response_error(429, "0" * 5000 + "5"), (False, "429", 5))
+
+    def test_http_error_response_is_closed(self):
+        error = response_error(429, "5")
+        stream = error.fp
+        self.check_error(error, (False, "429", 5))
+        self.assertTrue(stream.closed)
 
     def test_retry_after_not_applied_to_other_statuses(self):
         self.check_error(response_error(503, "5"), (False, "503", None))

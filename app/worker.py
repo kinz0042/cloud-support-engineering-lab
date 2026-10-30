@@ -6,10 +6,28 @@ import logging
 import os
 import time
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
 from . import relay_store as store
 
 LOG = logging.getLogger("relaydesk.worker")
+
+
+class NoRedirect(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+# The fixed local partner is the only intended recipient. Ignore ambient proxy
+# configuration and treat redirects as failures rather than forwarding headers.
+OPENER = build_opener(ProxyHandler({}), NoRedirect())
+
+
+def retry_after_seconds(value):
+    """Accept only ASCII delta-seconds, capped without unbounded integer parsing."""
+    if not value or not value.isascii() or not value.isdigit():
+        return None
+    normalized = value.lstrip("0") or "0"
+    return 300 if len(normalized) > 3 else min(int(normalized), 300)
 
 
 def deliver(row, endpoint, secret):
@@ -22,11 +40,12 @@ def deliver(row, endpoint, secret):
         "Content-Type": "application/json", "X-Relay-Signature": signature,
         "X-Relay-Timestamp": timestamp})
     try:
-        with urlopen(request, timeout=3) as response:
+        with OPENER.open(request, timeout=3) as response:
             return 200 <= response.status < 300, str(response.status), None
     except HTTPError as exc:
-        retry = exc.headers.get("Retry-After") if exc.code == 429 else None
-        return False, str(exc.code), min(int(retry), 300) if retry and retry.isdigit() else None
+        with exc:
+            retry = exc.headers.get("Retry-After") if exc.code == 429 else None
+            return False, str(exc.code), retry_after_seconds(retry)
     except (URLError, TimeoutError):
         return False, "transport_error", None
 
