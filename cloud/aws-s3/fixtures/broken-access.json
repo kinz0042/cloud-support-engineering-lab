@@ -1,0 +1,8 @@
+{
+  "label": "broken",
+  "principal": "integration-demo",
+  "allow_list_prefixes": ["allowed/"],
+  "allow_get_prefixes": ["allowed/"],
+  "allow_get_exact": [],
+  "deny_get_prefixes": ["private/"]
+}

@@ -32,6 +32,7 @@ The API creates the order and delivery record in one transaction. The worker lea
 | API and OAuth request failures | [Postman investigation workflow and executed collection checks](docs/postman-workflow.md) |
 | Linux service will not start or bind | [Configuration failure](incidents/INC-018/brief.md) and [port conflict](incidents/INC-019/brief.md) |
 | Private network connection is blocked | [Offline security-group investigation](incidents/INC-011/brief.md); AWS deployment pending |
+| Object access denied | [Offline object-access exercise](cloud/aws-s3/offline-exercise.md); actual S3 investigation pending |
 
 These are synthetic exercises. CI evidence proves that specified tests ran; it does not prove that the learner independently diagnosed the incidents. Each investigation has a [recording template](incidents/TEMPLATE.md) for actual evidence, competing hypotheses, root cause, validation and communication.
 

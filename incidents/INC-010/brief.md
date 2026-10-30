@@ -2,7 +2,15 @@
 
 **Synthetic customer:** “Our integration can list some files, but downloading a report returns AccessDenied.”
 
-**Status:** designed scenario. The Terraform scaffold has passed static validation, but no AWS deployment, AWS API call, customer impact or learner investigation has been verified. The scaffold does not create or attach an IAM principal or create objects, so the scenario requires additional setup in an authorized sandbox.
+**Status:** a local toy object-access scenario is implemented; no AWS deployment, AWS API call, customer impact or learner investigation has been verified. The separate Terraform scaffold does not create or attach an IAM principal or create objects, so a real scenario requires additional setup in an authorized sandbox.
+
+## Local reproduction
+
+The [offline exercise](../../cloud/aws-s3/offline-exercise.md) starts a synthetic loopback service with a missing toy allow for one report. It compares a successful list and reference read against a denied report, then switches to a recovered local fixture and repeats positive and negative controls. Record the generated request IDs and log evidence. These are not AWS APIs, policies, credentials, or CloudTrail events.
+
+For the supplied toy fixture, the report is denied because it is outside its allowed prefixes and exact-key list. The recovered fixture adds the report key while unrelated and private objects remain denied. This is a controlled explanation for the toy fixture, not a conclusion about a real S3 error.
+
+## Real AWS investigation design
 
 The planned environment is a disposable S3 bucket with public access blocked and an example IAM policy that allows reads only under `allowed/`. Investigate a request for an object outside that prefix. Confirm the caller identity, exact bucket/key, API action, time, error and request ID before comparing identity and resource policies. Check for explicit denies, permission boundaries, organization policies and any encryption-key permissions relevant to the real environment.
 

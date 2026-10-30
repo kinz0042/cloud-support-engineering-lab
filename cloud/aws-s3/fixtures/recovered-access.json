@@ -1,0 +1,8 @@
+{
+  "label": "recovered",
+  "principal": "integration-demo",
+  "allow_list_prefixes": ["allowed/"],
+  "allow_get_prefixes": ["allowed/"],
+  "allow_get_exact": ["reports/settlement-demo.json"],
+  "deny_get_prefixes": ["private/"]
+}
