@@ -1,6 +1,6 @@
 # Observability profile
 
-The optional Prometheus profile scrapes the lab API every five seconds. It evaluates demo alerts for API reachability, database connectivity, server errors, exhausted webhook deliveries, overdue delivery work and queue telemetry failures. Request counters reset on API restart; queue gauges are rebuilt from PostgreSQL. The lab does not yet provide latency histograms, distributed traces, durable dashboards or external alert notification.
+The optional Prometheus profile scrapes the lab API every five seconds. It evaluates demo alerts for API reachability, database connectivity, server errors, exhausted webhook deliveries, overdue delivery work, queue telemetry failures and order latency. Request counters and duration histograms reset on API restart; queue gauges are rebuilt from PostgreSQL. The lab does not yet provide distributed traces, durable dashboards or external alert notification.
 
 Start the lab and monitoring profile:
 
@@ -40,4 +40,9 @@ Three delivery rules use short lab thresholds:
 For the dead-delivery alert, use [INC-015](../incidents/INC-015/brief.md) and the reviewed replay runbook. For a backlog with a healthy API, use [INC-016](../incidents/INC-016/brief.md). The live checks verify that actual delivery recovers as well as the alert clearing; a disappearing alert alone is insufficient.
 
 This is a direct aggregate over the lab table and adds database work to each scrape. It is not a benchmarked production metrics design. Rule tests and live dead-delivery/backlog alert recovery passed in [Compose CI](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/40969544730). See [verification details](../incidents/INC-016/verification.md) for coverage and limits.
+
+## Request latency
+
+The [API latency runbook](api-latency.md) explains processing-duration logs, histogram buckets, the minimum-volume latency alert and PostgreSQL lock investigation. [INC-017](../incidents/INC-017/brief.md) demonstrates slow or cancelled reads with healthy liveness and connectivity probes. These metrics do not measure browser/network latency or webhook delivery delay.
+
 

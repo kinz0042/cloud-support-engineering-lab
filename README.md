@@ -14,6 +14,7 @@ This is an independent lab, not employment or production experience. No learner 
 - A read-only triage tool checks local health, readiness and authenticated order access without printing credentials.
 - A tenant-scoped operator CLI inspects deliveries and explicitly replays exhausted webhooks with an atomic audit record. See [delivery recovery](docs/delivery-recovery.md).
 - Queue metrics distinguish overdue work, exhausted retries and unavailable telemetry. Prometheus delivery alerts complement API health checks; see [observability](docs/observability.md).
+- Processing-duration logs and histogram metrics support a real [PostgreSQL lock/latency investigation](docs/api-latency.md), including bounded order reads and recovery validation.
 - A consistent investigation template separating observations, hypotheses and conclusions.
 - Explicit distinction between implemented capabilities and future work.
 - A Docker profile with synthetic tenants, PostgreSQL, a worker and signed webhooks. An optional Prometheus profile adds readiness monitoring and alert rules. PostgreSQL and full Compose smoke checks have passed on GitHub Actions.
@@ -65,5 +66,6 @@ Synthetic customers and orders only. The demonstration credentials are public an
 ## Attribution
 
 Initial scaffold and tests were AI-assisted. Learner investigations must identify hints used and evidence personally collected. Only verified work may be described in a CV.
+
 
 

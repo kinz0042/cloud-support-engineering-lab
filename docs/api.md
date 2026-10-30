@@ -15,10 +15,11 @@ For orders, supply `Authorization: Bearer <tenant-key>`. Acme and Orbit have dis
 
 For callbacks, sign the exact transmitted bytes: HMAC-SHA256 over the Unix timestamp in seconds, a literal dot, and the JSON body. Supply the hex digest in `X-Relay-Signature` and the timestamp in `X-Relay-Timestamp`. Requests outside five minutes are rejected; event IDs are deduplicated. Repeating an event ID for the same order returns `202` with `duplicate: true`; reusing it for a different order returns `409 event_id_conflict`. Deduplication compares the order ID, not the entire payload. `scripts/send_callback.py` demonstrates the format. The Compose mock partner persists duplicate IDs in its own local SQLite volume; deleting that volume removes its history. The in-memory partner used by some tests resets on restart.
 
-JSON responses include a request ID, also in `X-Request-ID`. Record that ID, UTC time, method, route and status when escalating. Never share bearer keys, webhook secrets or full customer payloads. A 503 indicates a failed dependency check; inspect logs and the database before asserting a root cause.
+JSON responses include a request ID, also in `X-Request-ID`. Record that ID, UTC time, method, route and status when escalating. Never share bearer keys, webhook secrets or full customer payloads. A 503 may indicate an unavailable dependency or a cancelled order-list query. For a cancelled read the error is `dependency_query_canceled`; use the request ID, logs and database evidence before asserting a root cause. See [API latency](api-latency.md).
 
 ## Postman
 
 Import [the local collection](../postman/RelayDesk.postman_collection.json) into Postman. It contains synthetic local keys, health/readiness requests, unauthorized controls and two-tenant order requests. The create request can be safely replayed and may return 201 on the first run or 200 subsequently. Tests check expected status and request ID. Do not replace the demo collection's values with real credentials or publish real customer data.
 
 Postman collection import and execution have not been verified in this environment; HTTP behavior is covered by the automated Python and Compose checks.
+

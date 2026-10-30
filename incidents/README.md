@@ -18,8 +18,10 @@
 | [INC-014](INC-014/brief.md) | OAuth client credentials rejected | Verified in OAuth CI; learner investigation pending | Token endpoint status and redacted configuration |
 | [INC-015](INC-015/brief.md) | Partner recovered but an exhausted delivery remains stuck | Recovery and audit verified in CI; learner investigation pending | Recipient history, inspected attempt count, replay audit and delivery recovery |
 | [INC-016](INC-016/brief.md) | API healthy while notifications stop | Backlog alert and delivery recovery verified in CI; learner investigation pending | Queue age, worker status, healthy API/DB, alert and delivery recovery |
+| [INC-017](INC-017/brief.md) | Order reads slow or cancelled while readiness is healthy | Lock wait, latency alert and recovery verified in CI; learner investigation pending | Request duration, lock/wait evidence, cancellation handling and unlocked read recovery |
 
 Planned incidents are not implemented or completed. Severity depends on demonstrated impact, not status code alone.
+
 
 
 
