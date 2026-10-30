@@ -40,3 +40,5 @@ For an actual incident, review authorization and blast radius, change only the i
 **Internal handoff:** include time and timezone, affected path, endpoints and all attached group IDs in a restricted channel, port, observed symptoms, tested alternatives, precise change, request or change reference, validation, rollback and remaining uncertainty. Never include credentials.
 
 **Preventive action:** review narrowly scoped network rules as code, add an appropriate regression check and alert on actual end-to-end connectivity. An offline fixture or mock test cannot replace that real verification.
+
+**Automated evidence:** [inspector and PostgreSQL suite](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41021476213); [Terraform validation and mocked plans](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41021868645). Neither run contacted a live AWS VPC or performed a learner investigation.
