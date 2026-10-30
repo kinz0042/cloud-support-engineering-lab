@@ -40,3 +40,27 @@ The documentation audit at this snapshot checked relative Markdown paths and hea
 - **Career outcome:** this project is one part of the wider career plan. Job eligibility, current vacancies, application materials, interviews and employment outcomes are not established by passing CI.
 
 These are honest boundaries, not hidden implementation tasks required to run the local v1. Future changes should address an observed defect or a specific need, rather than add incidents to inflate the catalogue.
+
+
+## AWS extension closeout — 30 October 2026
+
+After the live S3 and EC2 exercises, a further read-only check at approximately 20:10 UTC confirmed:
+
+- ListBuckets returned no S3 buckets.
+- Both lab EC2 instances were terminated.
+- Stockholm had no EBS volumes, Elastic IP allocations or NAT gateways.
+- The prior teardown check confirmed both temporary security groups were deleted, leaving the existing default group.
+
+This scope is the global S3 bucket list and the Stockholm EC2 resource types listed above, not an inventory of every AWS service or region. Existing VPCs and subnets were retained. No paid plan upgrade was performed.
+
+The $10 monthly budget remains configured with credits excluded. Its reported actual spend was $0, but its LastUpdatedTime was still 10:45 UTC, before the experiments. Therefore actual experiment costs and remaining credits are **not yet verified**. Email alert verification/delivery also remains unresolved; resource cleanup did not depend on receiving an alert.
+
+The following workflows all passed for commit `24b9322f86e76fd438bbfb2245a5bc62577487aa`:
+
+- [API contract tests](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41119468603)
+- [Terraform static validation](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41119468634)
+- [PostgreSQL integration](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41119468623)
+- [OAuth end-to-end](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41119468619)
+- [Compose end-to-end](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41119468666)
+
+The project now includes local application checks and two separate live AWS exercises with verified teardown. A complete RelayDesk cloud deployment, applied Terraform infrastructure, cloud log/alert validation, independent learner investigations and job-readiness assessment remain distinct unfinished capabilities; these results must not be presented as proof of them.
