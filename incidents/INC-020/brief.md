@@ -2,7 +2,7 @@
 
 **Synthetic customer complaint:** “Our integration has started failing when it saves its local record. The application is still running. Are records being lost?”
 
-**Status:** isolated local Linux teaching fixture; no real customer, full filesystem or learner investigation has been verified. Triage severity using impact, duration, affected writes, retry behavior and possible data loss; an error code alone does not establish severity.
+**Status:** isolated local Linux teaching fixture verified in [CI](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41024848468); no real customer, full filesystem or learner investigation has been verified. Triage severity using impact, duration, affected writes, retry behavior and possible data loss; an error code alone does not establish severity.
 
 ## Reproduction and evidence
 

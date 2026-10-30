@@ -36,4 +36,6 @@ For a real incident, coordinate an approved remediation based on evidence: for e
 
 Use [INC-020](../incidents/INC-020/brief.md) for the incident workflow. The Python checks cover the real device error, separate successful write/readback, error classification and a short-write control. They do not create a genuinely full filesystem or measure quota behavior.
 
+On 30 October 2026, [Linux CI](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41024848468) passed all six fixture checks at commit `cd7367250c83e3d8a9c13041c0464da846f487e8`, and the [PostgreSQL-backed suite](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41024848505) passed 89 tests. These checks do not prove a real filesystem was full, a production service was repaired, or that the learner independently investigated the scenario.
+
 References: [Linux `/dev/full` manual](https://man7.org/linux/man-pages/man4/full.4.html), [`df` manual](https://man7.org/linux/man-pages/man1/df.1.html), and [`findmnt` manual](https://man7.org/linux/man-pages/man8/findmnt.8.html).
