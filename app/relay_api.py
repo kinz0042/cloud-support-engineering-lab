@@ -17,6 +17,11 @@ from .pagination import encode_cursor, parse_page_query
 
 LOG = logging.getLogger("relaydesk")
 MAX_BODY = 4096
+BODY_READ_IDLE_TIMEOUT = 3.0
+
+
+class BodyReadTimeout(ValueError):
+    pass
 
 
 def tenant_for(header, keys):
@@ -52,10 +57,24 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def body_json(self):
-        length = self.headers.get("Content-Length", "")
-        if not length.isdigit() or int(length) < 1 or int(length) > MAX_BODY:
+        # This local HTTP server does not implement chunked request decoding.
+        # Reject ambiguous framing, even if a proxy supplied a Content-Length.
+        lengths = self.headers.get_all("Content-Length", [])
+        if self.headers.get_all("Transfer-Encoding", []) or len(lengths) != 1:
             raise ValueError("invalid body length")
-        raw = self.rfile.read(int(length))
+        length = lengths[0]
+        if not length.isascii() or not length.isdigit() or len(length) > 4 or not 1 <= int(length) <= MAX_BODY:
+            raise ValueError("invalid body length")
+        previous_timeout = self.connection.gettimeout()
+        self.connection.settimeout(self.server.body_read_idle_timeout)
+        try:
+            raw = self.rfile.read(int(length))
+        except TimeoutError as exc:
+            raise BodyReadTimeout("body read timed out") from exc
+        finally:
+            self.connection.settimeout(previous_timeout)
+        if len(raw) != int(length):
+            raise ValueError("incomplete body")
         return raw, json.loads(raw)
 
     def handle_request(self):
@@ -122,6 +141,9 @@ class Handler(BaseHTTPRequestHandler):
                 if not isinstance(event_id, str) or not 1 <= len(event_id) <= 100:
                     raise ValueError("bad event id")
                 order_id = str(uuid.UUID(order_id))
+            except BodyReadTimeout:
+                self.close_connection = True
+                return self.reply(408, {"error": "request_timeout"}, request_id, route, "body_read_timeout")
             except (ValueError, KeyError, TypeError, json.JSONDecodeError):
                 return self.reply(400, {"error": "invalid_request"}, request_id, route, "bad_body")
             try:
@@ -150,6 +172,9 @@ class Handler(BaseHTTPRequestHandler):
                 external_id = body["external_id"]
                 if not isinstance(external_id, str) or not 1 <= len(external_id) <= 100:
                     raise ValueError("bad external id")
+            except BodyReadTimeout:
+                self.close_connection = True
+                return self.reply(408, {"error": "request_timeout"}, request_id, route, "body_read_timeout")
             except (ValueError, KeyError, TypeError, json.JSONDecodeError):
                 return self.reply(400, {"error": "invalid_request"}, request_id, route, "bad_body")
         try:
@@ -192,6 +217,7 @@ def make_server(port=8081, backend=None, keys=None, secret=None):
     server.metrics_lock = threading.Lock()
     server.requests = Counter()
     server.clock = time.perf_counter
+    server.body_read_idle_timeout = BODY_READ_IDLE_TIMEOUT
     server.request_durations = RequestDurations()
     return server
 

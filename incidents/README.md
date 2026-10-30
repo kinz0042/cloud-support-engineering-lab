@@ -23,6 +23,7 @@
 | [INC-019](INC-019/brief.md) | Second Linux service cannot bind an occupied port | Port conflict and recovery verified in CI; learner investigation pending | Two unit states, listener ownership, journal errno and validation |
 | [INC-020](INC-020/brief.md) | Application cannot write a local record | Isolated Linux ENOSPC fixture verified in CI; learner investigation pending | Error number, affected mount, block/inode evidence and scoped validation |
 | [INC-021](INC-021/brief.md) | Integration imports only the first 100 orders | Pagination and recovery verified in CI; learner investigation pending | Page traversal, tenant scope, cursor and database-count evidence |
+| [INC-022](INC-022/brief.md) | Order submission hangs while health remains green | Local TCP tests cover incomplete body, timeout and malformed framing; learner investigation pending | Framing, client timing, request ID, bounded-read logs and successful retry |
 
 Planned incidents are not implemented or completed. Severity depends on demonstrated impact, not status code alone.
 

@@ -8,10 +8,12 @@ Base URL for the Docker lab: `http://127.0.0.1:8081`. Data and credentials are s
 | GET | /ready | PostgreSQL connectivity | 200 or 503 |
 | GET | /metrics | Prometheus text metrics | 200 |
 | GET | /v1/orders | List a page of the authorized tenant's orders | 200, 400, 401, 503 |
-| POST | /v1/orders | Create or replay an order by external ID | 201, 200, 400, 401, 503 |
-| POST | /v1/callbacks | Receive and deduplicate a signed callback | 202, 400, 401, 404, 409, 503 |
+| POST | /v1/orders | Create or replay an order by external ID | 201, 200, 400, 401, 408, 503 |
+| POST | /v1/callbacks | Receive and deduplicate a signed callback | 202, 400, 401, 404, 408, 409, 503 |
 
 For orders, supply `Authorization: Bearer <tenant-key>`. Acme and Orbit have distinct local demo keys in Compose. A POST body is JSON, for example `{"external_id":"example-1"}`. The same external ID within the same tenant returns the same order with `created: false`; the same external ID in another tenant creates a separate order. An accepted order queues an asynchronous webhook; it does not prove the partner received it.
+
+Direct POST requests require one ASCII decimal `Content-Length` between 1 and 4096 bytes. The local server does not decode `Transfer-Encoding`, including chunked uploads; missing, repeated, conflicting, oversized or incomplete framing is rejected with `400 invalid_request`. If the connection is idle while the declared body is being read, the server returns `408 request_timeout` after three seconds. An unauthenticated order request is rejected before its body is read. The timeout is an **idle** timeout, not a total request deadline: a client that continuously sends data can still keep a thread occupied. This local-only server is not a production-grade HTTP edge. See [INC-022](../incidents/INC-022/brief.md).
 
 Order listing returns `orders` and `next_cursor`. The default page contains at most 100 orders; use `?limit=1` through `?limit=100` to choose a smaller page. If `next_cursor` is a string, send it as `cursor` on the next request; `null` means no further page was found. Invalid, repeated or unknown query parameters produce `400 invalid_pagination`. Authentication is checked before pagination parameters. Cursors encode a timestamp and order ID; they are not encrypted, signed or an authorization credential. Every query remains tenant-scoped, including when a caller changes a cursor.
 
