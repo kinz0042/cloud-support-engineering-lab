@@ -2,6 +2,8 @@
 
 This guide is for the local, synthetic RelayDesk lab. Docker Desktop support depends on your Windows version, virtualization and Docker's current requirements. Do not assume it will run on every Windows installation. The Python foundation works separately and does not require Docker or VirtualBox.
 
+For the simplest first exercise, follow the [Windows first-incident guide](windows-first-incident.md) before attempting the Docker setup below.
+
 ## Check prerequisites
 
 Open PowerShell in the repository folder:

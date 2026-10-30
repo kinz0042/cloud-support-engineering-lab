@@ -4,6 +4,8 @@
 
 [Architecture](docs/architecture.md) · [Incident catalogue](incidents/README.md) · [Run locally](#run-locally) · [CI workflows](#verification) · [Career roadmap](docs/roadmap.md)
 
+New to the lab on Windows? Start with the [first investigation](docs/windows-first-incident.md) when ready. It does not require Docker or a virtual machine.
+
 RelayDesk accepts synthetic customer orders, stores them in PostgreSQL and delivers signed webhooks to a mock partner. Its failure scenarios are built for evidence-driven support work: reproduce the complaint, compare hypotheses, inspect logs and metrics, identify a cause, validate recovery and write an appropriate customer update.
 
 > This is an independent simulation built with substantial AI assistance, not employment or production experience. The owner's independent investigations and job readiness remain unassessed.

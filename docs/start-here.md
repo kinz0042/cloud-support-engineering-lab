@@ -12,6 +12,10 @@ This is a career project, not a course completion checklist. Progress depends on
 
 The [full roadmap](roadmap.md) records the details. We do one learner task at a time. AI-generated scaffold is not counted as your own troubleshooting evidence.
 
+## First practical investigation
+
+When you are ready to start, the [Windows first-incident guide](windows-first-incident.md) gives you one stage at a time: check Python, get the files, start the local service, and investigate a synthetic 401. It requires no Docker or VirtualBox. Record only what you actually observe and how much help you used.
+
 ## Current build status
 
-The assistant is building the lab. The learner walkthrough is deferred until the user considers the project build complete. VirtualBox is not required for the first lab.
+The foundation and multiple local incidents are implemented and verified in CI. The full Docker setup has not been checked on the learner's computer, and AWS remains an undeployed scaffold. The learner has chosen to defer practice while the project is being built; no learner investigation has been completed or scored.
