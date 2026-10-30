@@ -5,12 +5,16 @@ on:
       - 'linux/**'
       - 'scripts/systemd_smoke.py'
       - 'tests/test_linux_service.py'
+      - 'tests/test_enospc_lab.py'
+      - 'scripts/enospc_lab.py'
       - '.github/workflows/linux-service.yml'
   pull_request:
     paths:
       - 'linux/**'
       - 'scripts/systemd_smoke.py'
       - 'tests/test_linux_service.py'
+      - 'tests/test_enospc_lab.py'
+      - 'scripts/enospc_lab.py'
       - '.github/workflows/linux-service.yml'
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -31,3 +35,5 @@ jobs:
         run: python3 -m unittest discover -s tests -p test_linux_service.py -v
       - name: Investigate and recover transient systemd services
         run: python3 scripts/systemd_smoke.py
+      - name: Verify safe no-space fault and disposable recovery
+        run: python3 -m unittest discover -s tests -p test_enospc_lab.py -v

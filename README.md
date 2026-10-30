@@ -31,6 +31,7 @@ The API creates the order and delivery record in one transaction. The worker lea
 | Invalid or expired credentials | [Keycloak-issued token and JWT failure checks](incidents/oauth-verification.md) |
 | API and OAuth request failures | [Postman investigation workflow and executed collection checks](docs/postman-workflow.md) |
 | Linux service will not start or bind | [Configuration failure](incidents/INC-018/brief.md) and [port conflict](incidents/INC-019/brief.md) |
+| A Linux write fails with no space | [Isolated ENOSPC investigation](incidents/INC-020/brief.md) |
 | Private network connection is blocked | [Offline security-group investigation](incidents/INC-011/brief.md); AWS deployment pending |
 | Object access denied | [Offline object-access exercise](cloud/aws-s3/offline-exercise.md); actual S3 investigation pending |
 

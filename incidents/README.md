@@ -21,6 +21,7 @@
 | [INC-017](INC-017/brief.md) | Order reads slow or cancelled while readiness is healthy | Lock wait, latency alert and recovery verified in CI; learner investigation pending | Request duration, lock/wait evidence, cancellation handling and unlocked read recovery |
 | [INC-018](INC-018/brief.md) | Linux status service fails after configuration change | Service behavior verified in CI; learner investigation pending | Unit state, exit status, redacted journal and health recovery |
 | [INC-019](INC-019/brief.md) | Second Linux service cannot bind an occupied port | Port conflict and recovery verified in CI; learner investigation pending | Two unit states, listener ownership, journal errno and validation |
+| [INC-020](INC-020/brief.md) | Application cannot write a local record | Isolated Linux ENOSPC fixture; learner investigation pending | Error number, affected mount, block/inode evidence and scoped validation |
 
 Planned incidents are not implemented or completed. Severity depends on demonstrated impact, not status code alone.
 
