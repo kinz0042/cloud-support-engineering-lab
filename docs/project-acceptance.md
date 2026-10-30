@@ -1,6 +1,6 @@
-# Project acceptance: local lab v1
+# Project acceptance: flagship lab v1
 
-The local, synthetic RelayDesk lab is a complete, reviewable **v1 project**. Its purpose is to provide a reproducible application and support investigations, not to claim production deployment, independent learner experience, or job readiness. This record separates the delivered project from work that depends on an AWS account or the learner's participation.
+The local, synthetic RelayDesk lab is a complete, reviewable **v1 project**. Its purpose is to provide a reproducible application and support investigations, not to claim production deployment, independent learner experience, or job readiness. This record separates the delivered project from optional future engineering and the learner's independent competence assessment.
 
 ## Delivered scope
 
@@ -31,7 +31,7 @@ The following GitHub Actions runs executed commit `87cf2725fee7988360053485b9069
 
 The documentation audit at this snapshot checked relative Markdown paths and heading fragments against the repository tree; it did not validate external URLs or every command on every platform. Automated checks establish only their specific assertions and environment. Open each run to inspect its exact steps; later commits have their own results.
 
-## Explicitly outside v1 acceptance
+## Verification boundaries
 
 - **Live AWS extension:** separate S3 object-policy and EC2 private-network recovery exercises now have linked evidence above. Both were cleaned up. The core RelayDesk API/database/worker/mock-partner stack has now also run on temporary EC2 with verified teardown; optional OAuth/Prometheus profiles were not deployed there. The Terraform modules remain unapplied, and actual billed credit usage remains unverified.
 - **Personal setup:** Docker, WSL, Windows compatibility, desktop Postman, power and connectivity on the learner's own computer remain unverified. Hosted Windows tests do not establish laptop compatibility.
@@ -68,3 +68,7 @@ The project now includes local application checks and two separate live AWS exer
 ## Temporary application deployment extension
 
 The [EC2 run](../cloud/aws-relaydesk/verification.md) executed the existing Compose smoke script from revision `837c5a86a92b5fa23c055eb5a1554737ef138189`, then verified an 11-event sanitized CloudWatch batch export and removed the temporary instance, disks, security group and log group. This is single-host, loopback-only application validation with mock integrations, not a publicly hosted production application or continuous cloud observability.
+
+## Final build review
+
+The flagship v1 build is closed for feature expansion. Existing implementation defects can still be fixed; additional technologies or projects require a concrete evidence gap. See [build completion](build-completion.md) for the handoff and the difference between a completed lab and independently demonstrated competence.

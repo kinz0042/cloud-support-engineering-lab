@@ -1,6 +1,6 @@
 # INC-011 — Private API is unreachable from an integration
 
-**Status:** offline synthetic scenario and undeployed Terraform scaffold. No AWS packet test, cloud incident, deployment or learner investigation has been performed.
+**Status:** the fixtures below remain an offline scenario and the Terraform scaffold remains unapplied. A separate [live private EC2 timeout/recovery test](../../cloud/aws-network/live-verification.md) has now been executed and cleaned up. It did not run the third-client negative control described in this brief. Independent learner investigation remains pending.
 
 **Synthetic customer complaint:** “Our order integration times out when it connects to the private API. The application team says the API responds on the host. Please investigate before changing access.”
 

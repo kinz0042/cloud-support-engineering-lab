@@ -20,11 +20,11 @@ flowchart TD
 The API writes an order and an outbox record to PostgreSQL. The worker reads the outbox and sends signed events to the mock partner. A separate signed callback endpoint can be exercised with the callback script. Prometheus scrapes API metrics; API, worker and partner emit logs. The current implementation has no reverse proxy, TLS termination or distributed tracing.
 
 
-The Compose mock partner persists event IDs in a separate SQLite volume, so container recreation does not erase its history. The in-memory test mode remains available. Event deduplication alone does not make arbitrary business side effects exactly-once. Remaining work includes richer telemetry and a real AWS sandbox deployment with teardown verification. Local OAuth, network diagnostics, token-expiry and webhook-recovery checks are already implemented. These simulations do not establish AWS experience or learner competence.
+The Compose mock partner persists event IDs in a separate SQLite volume, so container recreation does not erase its history. The in-memory test mode remains available. Event deduplication alone does not make arbitrary business side effects exactly-once. Live S3, private-network recovery and the core application have now been exercised in a temporary AWS sandbox with teardown verification; see the acceptance record. Continuous cloud telemetry and production deployment remain outside this lab. Local OAuth, network diagnostics, token-expiry and webhook-recovery checks are already implemented. These simulations do not establish AWS experience or learner competence.
 
 Decisions: Python first to read and automate investigations. SQL receives substantial practice. Basic JavaScript/DevTools later for customer integration reproduction; React and Kubernetes await stronger role-specific evidence. Local default, lightweight optional services, no always-on cloud bill.
 
-Resource target (unmeasured): core containers comfortably below 4 GB RAM; measure before adding telemetry. Current laptop/OS must be rechecked before installation.
+The core stack completed its smoke test on a 2 GiB t3.small host; peak memory and sustained-load capacity were not measured. Measure before adding telemetry or increasing load. Current laptop/OS must be rechecked before installation.
 
 ## Optional OAuth profile
 
