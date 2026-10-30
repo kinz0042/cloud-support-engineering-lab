@@ -56,4 +56,4 @@ When finished, click the first PowerShell window and press **Ctrl+C** to stop th
 
 ## Scope of verification
 
-The [Windows workflow](../.github/workflows/windows.yml) is configured to start the foundation service and use Windows PowerShell and `curl.exe` to check the health request, malformed credential, corrected credential and missing-credential control. Check the actual CI run for its result. A hosted Windows runner cannot prove compatibility or setup on your own computer.
+On 30 October 2026, [this Windows CI run](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41020216594) started the foundation service and used Windows PowerShell and `curl.exe` to verify health 200, malformed credential 401, corrected credential 200, missing credential 401, and request IDs. It ran on a hosted Windows Server 2025 runner at commit `af96a74a600f3c46e27d15bb62f60272351e71a0`. It did not test the ZIP download, interactive setup or the learner's laptop. A hosted runner cannot prove compatibility on your computer.
