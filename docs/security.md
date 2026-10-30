@@ -10,3 +10,6 @@ The local webhook signs a timestamp and body with HMAC, rejects messages outside
 
 The delivery recovery CLI is an operator tool using the API container's database privileges, not a separate authorization boundary. Inspection uses a read-only transaction. Replay changes one eligible dead delivery and writes an audit record atomically. Its actor label and recipient-review flag are operator assertions, not verified identities or proof of safe recipient processing. A privileged database user can alter the audit; do not describe it as tamper-proof.
 
+The optional Linux lab binds its status service to loopback and creates transient units rather than installing persistent ones. The manager operation requires `sudo`; the lab service is configured to run as the invoking unprivileged user with `NoNewPrivileges`. The CI helper is intended only for a disposable runner: an environment variable alone cannot prove the host is disposable. Successful startup logs include the synthetic instance ID and port, so never put secrets in those fields.
+
+

@@ -29,3 +29,8 @@ Resource target (unmeasured): core containers comfortably below 4 GB RAM; measur
 ## Optional OAuth profile
 
 Keycloak issues synthetic client-credentials tokens. An OAuth gateway validates JWT signature, issuer, audience and expiry, maps the verified tenant claim to the local API credential and forwards to the API. It adds a second request ID for tracing. This profile is local-only and uses an HTTP development identity provider. See [OAuth lab](oauth.md).
+
+## Optional Linux service lab
+
+A separate loopback-only synthetic status service runs as a transient systemd unit on a suitable Linux host. The lab injects an empty required configuration value and a port collision, then uses unit status, exit codes, the journal and local HTTP checks to distinguish and recover the failures. It is not a dependency of the Docker application, a deployed customer agent, or evidence of systemd support on the learner's laptop. See the [Linux service lab](linux-service-lab.md).
+

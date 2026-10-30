@@ -16,6 +16,8 @@ from urllib.request import urlopen
 
 if os.environ.get("GITHUB_ACTIONS") != "true" or sys.platform != "linux":
     raise SystemExit("This automation is restricted to a disposable GitHub Actions Linux runner")
+if os.geteuid() == 0:
+    raise SystemExit("Run the lab as an unprivileged runner user, not root")
 
 SERVICE = Path(__file__).resolve().parents[1] / "linux" / "status_service.py"
 user = pwd.getpwuid(os.getuid()).pw_name
@@ -92,7 +94,11 @@ with tempfile.TemporaryDirectory(prefix="relaydesk-systemd-ci-") as temp:
         command("systemctl", "restart", unit_a)
         wait_for(lambda: show(unit_a, "ActiveState") == "active", "first service activation")
         wait_for(lambda: health(port).get("instance") == "alpha-demo", "first service health")
-        assert int(show(unit_a, "MainPID")) > 0
+        pid = int(show(unit_a, "MainPID"))
+        assert pid > 0
+        effective_uid = subprocess.check_output(['ps', '-o', 'euid=', '-p', str(pid)], text=True).strip()
+        assert effective_uid == str(os.geteuid()), 'Synthetic service did not run as the runner user'
+        assert show(unit_a, 'NoNewPrivileges') == 'yes'
 
         second = launch(unit_b, env_b)
         wait_for(lambda: show(unit_b, "ActiveState") == "failed",
@@ -108,7 +114,9 @@ with tempfile.TemporaryDirectory(prefix="relaydesk-systemd-ci-") as temp:
         wait_for(lambda: show(unit_b, "ActiveState") == "active", "second service activation")
         wait_for(lambda: health(port).get("instance") == "bravo-demo", "second service health")
         print(json.dumps({"configuration_failure_status": 2, "port_conflict_status": 1,
-                          "conflict_errno": errno.EADDRINUSE, "recovered_instance": "bravo-demo"}))
+                          "conflict_errno": errno.EADDRINUSE, "recovered_instance": "bravo-demo",
+                          "unprivileged_runner_user": os.geteuid() != 0,
+                          "no_new_privileges": True}))
     except Exception:
         # The only collected journal records belong to the two synthetic units.
         for unit in (unit_a, unit_b):

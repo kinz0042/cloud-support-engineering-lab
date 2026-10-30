@@ -1,71 +1,79 @@
 # Cloud Support Engineering Lab
 
-**Evidence-driven troubleshooting for a simulated B2B order-integration service.**
+**Investigate realistic API, database, integration and Linux failures in a synthetic B2B order service.**
 
-Status: Python foundation and Docker/PostgreSQL integration profile. Real PostgreSQL integration and Docker Compose startup, delivery, callback deduplication and database recovery pass GitHub Actions.
-This is an independent lab, not employment or production experience. No learner incidents are certified complete.
+[Architecture](docs/architecture.md) · [Incident catalogue](incidents/README.md) · [Run locally](#run-locally) · [CI workflows](#verification) · [Career roadmap](docs/roadmap.md)
 
-[Start here](docs/start-here.md) · [Windows setup](docs/windows-setup.md) · [Architecture](docs/architecture.md) · [Incident catalogue](incidents/README.md) · [Support playbook](docs/support-playbook.md) · [API and Postman](docs/api.md) · [OAuth lab](docs/oauth.md) · [AWS sandbox](cloud/aws-s3/README.md) · [Operations](docs/operations.md) · [Observability](docs/observability.md) · [Networking](docs/networking.md) · [Roadmap](docs/roadmap.md) · [Market evidence](docs/market.md) · [Readiness](docs/readiness.md) · [Practice assessment](docs/support-readiness-assessment.md)
+RelayDesk accepts synthetic customer orders, stores them in PostgreSQL and delivers signed webhooks to a mock partner. Its failure scenarios are built for evidence-driven support work: reproduce the complaint, compare hypotheses, inspect logs and metrics, identify a cause, validate recovery and write an appropriate customer update.
 
-## What a reviewer can verify today
+> This is an independent simulation built with substantial AI assistance, not employment or production experience. The owner's independent investigations and job readiness remain unassessed.
 
-- A local HTTP service with a health endpoint, protected order endpoint, safe structured request logs and correlation IDs.
-- A reproducible customer authentication failure and contract tests for success and error paths.
-- A read-only triage tool checks local health, readiness and authenticated order access without printing credentials.
-- A tenant-scoped operator CLI inspects deliveries and explicitly replays exhausted webhooks with an atomic audit record. See [delivery recovery](docs/delivery-recovery.md).
-- Queue metrics distinguish overdue work, exhausted retries and unavailable telemetry. Prometheus delivery alerts complement API health checks; see [observability](docs/observability.md).
-- Processing-duration logs and histogram metrics support a real [PostgreSQL lock/latency investigation](docs/api-latency.md), including bounded order reads and recovery validation.
-- A consistent investigation template separating observations, hypotheses and conclusions.
-- Explicit distinction between implemented capabilities and future work.
-- A Docker profile with synthetic tenants, PostgreSQL, a worker and signed webhooks. An optional Prometheus profile adds readiness monitoring and alert rules. PostgreSQL and full Compose smoke checks have passed on GitHub Actions.
+```mermaid
+flowchart TD
+  Client["Synthetic customer"] --> API["Order API"]
+  API --> DB[("PostgreSQL")]
+  Worker["Webhook worker"] --> DB
+  Worker --> Partner["Mock partner"]
+  Prom["Prometheus, optional"] --> API
+```
 
-## Run the foundation
+The API creates the order and delivery record in one transaction. The worker leases and retries deliveries; the partner validates signatures and retains event IDs in a local volume. The optional [OAuth profile](docs/oauth.md) puts a Keycloak-backed JWT gateway in front of the API. A separate [Linux service lab](docs/linux-service-lab.md) exercises systemd without requiring the Docker stack.
 
-Python 3.11+; no external packages. Run from the repository root:
+## What a reviewer can inspect
+
+| Support problem | Implemented evidence |
+| --- | --- |
+| Accepted order, missing notification | [Exhausted retries, recipient review and audited replay](incidents/INC-015/verification.md) |
+| API healthy while deliveries stop | [Queue telemetry and stopped-worker recovery](incidents/INC-016/verification.md) |
+| Slow reads despite healthy readiness | [PostgreSQL lock waits, request timing and alert recovery](incidents/INC-017/verification.md) |
+| Invalid or expired credentials | [Keycloak-issued token and JWT failure checks](incidents/oauth-verification.md) |
+| Linux service will not start or bind | [Configuration failure](incidents/INC-018/brief.md) and [port conflict](incidents/INC-019/brief.md) |
+
+These are synthetic exercises. CI evidence proves that specified tests ran; it does not prove that the learner independently diagnosed the incidents. Each investigation has a [recording template](incidents/TEMPLATE.md) for actual evidence, competing hypotheses, root cause, validation and communication.
+
+## Run locally
+
+The lightweight foundation needs Python 3.11+ and no third-party packages. From the repository root:
 
 ```sh
 python -m unittest discover -s tests -v
 python app/server.py
 ```
 
-Windows may require `py` in place of `python`. In a second terminal:
+The full test command skips PostgreSQL- and JWT-dependent tests when their services or packages are unavailable. The local server listens on `127.0.0.1:8080`. In a second terminal:
 
 ```sh
 curl -i http://127.0.0.1:8080/health
 curl -i http://127.0.0.1:8080/v1/orders
+curl -i http://127.0.0.1:8080/v1/orders -H 'Authorization: Bearer lab-demo-token-not-a-secret'
 ```
 
-PowerShell users should use `curl.exe`. Follow [INC-001](incidents/INC-001/brief.md) and [INC-002](incidents/INC-002/brief.md); record your own evidence before inspecting implementation. The [Docker profile](docs/operations.md) runs separately on port 8081.
-Stop the server with Ctrl+C. The server binds only to localhost.
+The second request deliberately demonstrates a 401; the third uses the public synthetic credential. On Windows, use `py` if needed and `curl.exe` in PowerShell. Stop the server with Ctrl+C. See [Windows setup](docs/windows-setup.md) for the user's platform.
 
-## Project structure
+| Profile | Purpose | Requirements |
+| --- | --- | --- |
+| [Docker application](docs/operations.md) | API, PostgreSQL, worker and signed webhooks | Docker Engine with Compose |
+| [Observability](docs/observability.md) | Queue and latency metrics, alerts and recovery | Docker Compose; optional Prometheus profile |
+| [OAuth](docs/oauth.md) | Client credentials and JWT failure scenarios | Docker Compose; optional Keycloak profile |
+| [Linux services](docs/linux-service-lab.md) | systemd, journal, environment and listening-port investigations | Authorized Linux system with systemd and `sudo` |
+| [AWS sandbox design](cloud/aws-s3/README.md) | S3/IAM investigation scaffold | Terraform; real deployment has not been performed |
 
-- `app/`: implemented foundation service
-- `tests/`: real HTTP contract and log-redaction tests
-- `incidents/`: briefs, catalogue and investigation template
-- `docs/`: architecture, learning gates, market evidence and security
-- `db/`, `compose.yaml`: PostgreSQL schema and local service topology
-- `docs/operations.md`: Docker setup and failure drills
-- `.github/workflows/`: API, PostgreSQL, Compose, OAuth and Terraform checks
+## Verification
 
-## Skills demonstrated by the foundation
+GitHub Actions runs [API tests](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/tests.yml), [PostgreSQL integration](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/integration.yml), [Docker Compose end-to-end](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/compose.yml), [OAuth](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/oauth.yml), [Windows foundation checks](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/windows.yml), [Linux service checks](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/linux-service.yml) and [Terraform static validation](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/terraform.yml). Open individual runs for their exact revision and scope; tests can be skipped when optional dependencies are absent.
 
-HTTP status/headers, bearer authentication, JSON, Python, log correlation, reproduction and regression tests.
-Learner competence remains unassessed until independently demonstrated.
+The Compose suite uses a disposable database, injects failures and checks recovery. The Linux CI exercise uses uniquely named transient units on a disposable runner. Terraform validation does not deploy or test AWS resources. See the [incident catalogue](incidents/README.md) for completed automated checks and unfinished investigations.
 
-## Working method
+## Project map
 
-Customer report → scope impact → reproduce → collect evidence → inspect logs/metrics → rank hypotheses → test → establish root cause → fix or escalate → validate → prevent recurrence → document → update customer.
+- `app/`, `db/`, `compose.yaml`: synthetic API, database, worker and local topology.
+- `linux/`: optional loopback status service for systemd investigations.
+- `tests/`, `scripts/`, `.github/workflows/`: contract, integration and end-to-end checks.
+- `incidents/`: customer reports, briefs, verification evidence and investigation template.
+- `docs/`, `monitoring/`, `cloud/`: runbooks, metrics/alerts and undeployed AWS scaffold.
 
-Every investigation records expected versus actual behavior, timestamps, request IDs, unsuccessful hypotheses, rollback and customer impact. A successful request alone does not establish the cause of a failure.
+## Boundaries and next steps
 
-## Scope and safety
+Use synthetic data only. Credentials in the repository are public lab values. The services lack production TLS, secret management, production-grade rate limiting and external alert delivery. The Postman collection has not been manually verified; WSL and the full setup have not been verified on the learner's laptop. See [security](docs/security.md).
 
-Synthetic customers and orders only. The demonstration credentials are public and local-only. This is not production software: no production TLS, rate limiting or secret management. OAuth/JWT is available in a separate local demonstration profile. The foundation on port 8080 remains static; the Docker profile on 8081 uses PostgreSQL. See [security](docs/security.md). Never expose it publicly.
-
-## Attribution
-
-Initial scaffold and tests were AI-assisted. Learner investigations must identify hints used and evidence personally collected. Only verified work may be described in a CV.
-
-
-
+Learning and hiring readiness require independently performed investigations, written customer communication and interview practice. The [readiness criteria](docs/readiness.md), [practice assessment](docs/support-readiness-assessment.md), and [market evidence](docs/market.md) make those gates explicit. Only personally verified work belongs in a CV or interview story.

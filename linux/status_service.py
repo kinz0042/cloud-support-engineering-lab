@@ -53,7 +53,9 @@ def main():
     try:
         server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     except OSError as exc:
-        emit("listen_failed", errno=exc.errno, address_in_use=(exc.errno == errno.EADDRINUSE))
+        # Winsock reports WSAEADDRINUSE as 10048; Linux uses EADDRINUSE.
+        occupied = exc.errno in (errno.EADDRINUSE, 10048) or getattr(exc, "winerror", None) == 10048
+        emit("listen_failed", errno=exc.errno, address_in_use=occupied)
         return 1
     server.instance = instance
     stopping = threading.Event()
