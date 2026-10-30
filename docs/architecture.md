@@ -34,3 +34,7 @@ Keycloak issues synthetic client-credentials tokens. An OAuth gateway validates 
 
 A separate loopback-only synthetic status service runs as a transient systemd unit on a suitable Linux host. The lab injects an empty required configuration value and a port collision, then uses unit status, exit codes, the journal and local HTTP checks to distinguish and recover the failures. It is not a dependency of the Docker application, a deployed customer agent, or evidence of systemd support on the learner's laptop. See the [Linux service lab](linux-service-lab.md).
 
+
+## Temporary EC2 application validation
+
+The [core Compose stack has been exercised on EC2](../cloud/aws-relaydesk/verification.md). Its API stayed on loopback, with no inbound security-group rules. A temporary public IPv4 address provided outbound package/image access. Operator-side CloudWatch batch export was verified, followed by teardown; there is no continuously hosted service, logging agent, load balancer or managed database in this result.

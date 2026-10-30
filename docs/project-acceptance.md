@@ -33,7 +33,7 @@ The documentation audit at this snapshot checked relative Markdown paths and hea
 
 ## Explicitly outside v1 acceptance
 
-- **Live AWS extension:** separate S3 object-policy and EC2 private-network recovery exercises now have linked evidence above. Both were cleaned up. The full RelayDesk application has not been deployed on AWS, the Terraform modules have not been applied, and actual billed credit usage remains unverified.
+- **Live AWS extension:** separate S3 object-policy and EC2 private-network recovery exercises now have linked evidence above. Both were cleaned up. The core RelayDesk API/database/worker/mock-partner stack has now also run on temporary EC2 with verified teardown; optional OAuth/Prometheus profiles were not deployed there. The Terraform modules remain unapplied, and actual billed credit usage remains unverified.
 - **Personal setup:** Docker, WSL, Windows compatibility, desktop Postman, power and connectivity on the learner's own computer remain unverified. Hosted Windows tests do not establish laptop compatibility.
 - **Professional evidence:** incidents are simulated; none is represented as a real customer's outage or the learner's independently completed investigation. The learner's explanations, assessments and interview performance have not been measured.
 - **Production operation:** no production TLS, secret management, comprehensive egress controls, total request deadlines, high availability, backups or external alerting. Do not expose the lab publicly.
@@ -63,4 +63,8 @@ The following workflows all passed for commit `24b9322f86e76fd438bbfb2245a5bc625
 - [OAuth end-to-end](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41119468619)
 - [Compose end-to-end](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41119468666)
 
-The project now includes local application checks and two separate live AWS exercises with verified teardown. A complete RelayDesk cloud deployment, applied Terraform infrastructure, cloud log/alert validation, independent learner investigations and job-readiness assessment remain distinct unfinished capabilities; these results must not be presented as proof of them.
+The project now includes local application checks and two separate live AWS exercises with verified teardown. Subsequently, the core RelayDesk stack also passed a [temporary EC2 deployment and CloudWatch batch export](../cloud/aws-relaydesk/verification.md). Applied Terraform, continuous cloud logging/alarms, independent learner investigations and job-readiness assessment remain distinct unfinished capabilities.
+
+## Temporary application deployment extension
+
+The [EC2 run](../cloud/aws-relaydesk/verification.md) executed the existing Compose smoke script from revision `837c5a86a92b5fa23c055eb5a1554737ef138189`, then verified an 11-event sanitized CloudWatch batch export and removed the temporary instance, disks, security group and log group. This is single-host, loopback-only application validation with mock integrations, not a publicly hosted production application or continuous cloud observability.

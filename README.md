@@ -27,6 +27,7 @@ The API creates the order and delivery record in one transaction. The worker lea
 
 | Support problem | Implemented evidence |
 | --- | --- |
+| Application startup and dependency recovery on EC2 | [Live RelayDesk stack and CloudWatch batch export](cloud/aws-relaydesk/verification.md) |
 | Accepted order, missing notification | [Exhausted retries, recipient review and audited replay](incidents/INC-015/verification.md) |
 | API healthy while deliveries stop | [Queue telemetry and stopped-worker recovery](incidents/INC-016/verification.md) |
 | Slow reads despite healthy readiness | [PostgreSQL lock waits, request timing and alert recovery](incidents/INC-017/verification.md) |
