@@ -1,0 +1,59 @@
+name: Postman collections
+on:
+  push:
+    paths:
+      - 'postman/**'
+      - 'app/**'
+      - 'auth/**'
+      - 'db/**'
+      - 'compose*.yaml'
+      - 'Dockerfile'
+      - 'requirements.txt'
+      - 'scripts/compose_smoke.py'
+      - 'scripts/oauth_smoke.py'
+      - '.github/workflows/postman.yml'
+  pull_request:
+    paths:
+      - 'postman/**'
+      - 'app/**'
+      - 'auth/**'
+      - 'db/**'
+      - 'compose*.yaml'
+      - 'Dockerfile'
+      - 'requirements.txt'
+      - 'scripts/compose_smoke.py'
+      - 'scripts/oauth_smoke.py'
+      - '.github/workflows/postman.yml'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  collections:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Start local API, database and identity provider
+        run: docker compose -f compose.yaml -f compose.auth.yaml up -d --build
+      - name: Verify API and create synthetic fixture
+        run: python3 scripts/compose_smoke.py
+      - name: Wait for identity provider and verify OAuth
+        run: python3 scripts/oauth_smoke.py
+      - name: Install Postman collection runner
+        run: npm install --prefix "$RUNNER_TEMP/relaydesk-newman" --no-save --ignore-scripts --no-package-lock newman@6.2.3
+      - name: Run API collection
+        run: '"$RUNNER_TEMP/relaydesk-newman/node_modules/.bin/newman" run postman/RelayDesk.postman_collection.json --reporters cli --timeout-request 5000 --disable-unicode --color off --bail'
+      - name: Run OAuth collection
+        run: '"$RUNNER_TEMP/relaydesk-newman/node_modules/.bin/newman" run postman/RelayDesk-OAuth.postman_collection.json --reporters cli --timeout-request 5000 --disable-unicode --color off --bail'
+      - name: Capture diagnostics on failure
+        if: failure()
+        run: docker compose -f compose.yaml -f compose.auth.yaml logs --no-color --tail=80
+      - name: Remove disposable lab and database
+        if: always()
+        run: docker compose -f compose.yaml -f compose.auth.yaml down -v

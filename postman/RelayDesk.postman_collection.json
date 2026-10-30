@@ -2,7 +2,7 @@
   "info": {
     "name": "RelayDesk support investigations",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Synthetic local-only requests. Never import real credentials into a shared collection."
+    "description": "Synthetic local-only requests. Run the whole collection in order. Never put real credentials or customer data in a shared collection."
   },
   "variable": [
     {
@@ -16,6 +16,14 @@
     {
       "key": "orbit_key",
       "value": "orbit-local-key"
+    },
+    {
+      "key": "external_id",
+      "value": ""
+    },
+    {
+      "key": "created_order_id",
+      "value": ""
     }
   ],
   "item": [
@@ -155,7 +163,7 @@
       ]
     },
     {
-      "name": "Create or replay Acme order",
+      "name": "Create Acme order",
       "request": {
         "method": "POST",
         "header": [
@@ -171,7 +179,52 @@
         "url": "{{base_url}}/v1/orders",
         "body": {
           "mode": "raw",
-          "raw": "{\"external_id\":\"postman-example-001\"}"
+          "raw": "{\"external_id\":\"{{external_id}}\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"external_id\", \"postman-\" + Date.now() + \"-\" + Math.random().toString(36).slice(2, 10));",
+              "pm.collectionVariables.unset(\"created_order_id\");"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+              "pm.test(\"Request ID returned\", function () { pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.ok; });",
+              "pm.test(\"New order created\", function () { var data = pm.response.json(); pm.expect(data.created).to.eql(true); pm.expect(data.order.id).to.be.a(\"string\").and.not.empty; pm.expect(data.order.external_id).to.eql(pm.collectionVariables.get(\"external_id\")); });",
+              "if (pm.response.code === 201) { pm.collectionVariables.set(\"created_order_id\", pm.response.json().order.id); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Replay the same Acme order",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{acme_key}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/v1/orders",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"external_id\":\"{{external_id}}\"}"
         }
       },
       "event": [
@@ -180,8 +233,95 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"Expected HTTP status\", function () { pm.expect([200,201]).to.include(pm.response.code); });",
-              "pm.test(\"Request ID returned\", function () { pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.ok; });"
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Request ID returned\", function () { pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.ok; });",
+              "pm.test(\"Replay returns the original order\", function () { var data = pm.response.json(); pm.expect(data.created).to.eql(false); pm.expect(data.order.id).to.eql(pm.collectionVariables.get(\"created_order_id\")); pm.expect(data.order.external_id).to.eql(pm.collectionVariables.get(\"external_id\")); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Verify Acme can see its order",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{acme_key}}"
+          }
+        ],
+        "url": "{{base_url}}/v1/orders"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Request ID returned\", function () { pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.ok; });",
+              "pm.test(\"Tenant visibility\", function () { var ids = pm.response.json().orders.map(function (order) { return order.id; }); pm.expect(ids).to.include(pm.collectionVariables.get(\"created_order_id\")); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Verify Orbit cannot see Acme order",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{orbit_key}}"
+          }
+        ],
+        "url": "{{base_url}}/v1/orders"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Request ID returned\", function () { pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.ok; });",
+              "pm.test(\"Tenant visibility\", function () { var ids = pm.response.json().orders.map(function (order) { return order.id; }); pm.expect(ids).not.to.include(pm.collectionVariables.get(\"created_order_id\")); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject invalid JSON",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/v1/orders",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{acme_key}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "not-json"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Request ID returned\", function () { pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.ok; });",
+              "pm.test(\"Invalid request response\", function () { pm.expect(pm.response.json().error).to.eql(\"invalid_request\"); });"
             ]
           }
         }

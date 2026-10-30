@@ -60,7 +60,7 @@ The second request deliberately demonstrates a 401; the third uses the public sy
 
 ## Verification
 
-GitHub Actions runs [API tests](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/tests.yml), [PostgreSQL integration](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/integration.yml), [Docker Compose end-to-end](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/compose.yml), [OAuth](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/oauth.yml), [Windows foundation checks](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/windows.yml), [Linux service checks](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/linux-service.yml) and [Terraform static validation](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/terraform.yml). Open individual runs for their exact revision and scope; tests can be skipped when optional dependencies are absent.
+GitHub Actions runs [API tests](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/tests.yml), [PostgreSQL integration](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/integration.yml), [Docker Compose end-to-end](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/compose.yml), [OAuth](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/oauth.yml), [Postman collections](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/postman.yml), [Windows foundation checks](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/windows.yml), [Linux service checks](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/linux-service.yml) and [Terraform static validation](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/terraform.yml). Open individual runs for their exact revision and scope; tests can be skipped when optional dependencies are absent.
 
 The Compose suite uses a disposable database, injects failures and checks recovery. The Linux CI exercise uses uniquely named transient units on a disposable runner. Terraform validation does not deploy or test AWS resources. See the [incident catalogue](incidents/README.md) for completed automated checks and unfinished investigations.
 
@@ -71,9 +71,10 @@ The Compose suite uses a disposable database, injects failures and checks recove
 - `tests/`, `scripts/`, `.github/workflows/`: contract, integration and end-to-end checks.
 - `incidents/`: customer reports, briefs, verification evidence and investigation template.
 - `docs/`, `monitoring/`, `cloud/`: runbooks, metrics/alerts and undeployed AWS scaffold.
+- `postman/`: local API and OAuth collections with ordered response assertions.
 
 ## Boundaries and next steps
 
-Use synthetic data only. Credentials in the repository are public lab values. The services lack production TLS, secret management, production-grade rate limiting and external alert delivery. The Postman collection has not been manually verified; WSL and the full setup have not been verified on the learner's laptop. See [security](docs/security.md).
+Use synthetic data only. Credentials in the repository are public lab values. The services lack production TLS, secret management, production-grade rate limiting and external alert delivery. Desktop Postman import, WSL and the full setup have not been verified on the learner's laptop. See [security](docs/security.md).
 
 Learning and hiring readiness require independently performed investigations, written customer communication and interview practice. The [readiness criteria](docs/readiness.md), [practice assessment](docs/support-readiness-assessment.md), and [market evidence](docs/market.md) make those gates explicit. Only personally verified work belongs in a CV or interview story.

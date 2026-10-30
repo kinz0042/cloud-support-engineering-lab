@@ -14,6 +14,6 @@ This is an integration demonstration, not production-grade authorization: fixed 
 
 ## Postman and boundaries
 
-Import [the OAuth Postman collection](../postman/RelayDesk-OAuth.postman_collection.json), send the token request, then send the order request before the 20-second token expires. The collection stores its synthetic token in a collection variable; never put real credentials or tokens into a shared collection. Postman import and execution have not been verified here.
+Import [the OAuth Postman collection](../postman/RelayDesk-OAuth.postman_collection.json) and run its requests in order. It checks valid and missing tokens, a wrong client secret, a wrong audience and an unmapped tenant. The collection stores synthetic tokens in collection variables; never put real credentials or tokens into a shared collection. See the [Postman investigation workflow](postman-workflow.md) for the 20-second lifetime, expected results and CI verification. Desktop Postman import has not been verified here.
 
 The base API is also reachable on loopback port 8081 using demo API keys, bypassing the gateway. This arrangement allows side-by-side troubleshooting exercises and is not a production security boundary. Do not expose either service publicly.

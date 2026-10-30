@@ -19,7 +19,5 @@ JSON responses include a request ID, also in `X-Request-ID`. Record that ID, UTC
 
 ## Postman
 
-Import [the local collection](../postman/RelayDesk.postman_collection.json) into Postman. It contains synthetic local keys, health/readiness requests, unauthorized controls and two-tenant order requests. The create request can be safely replayed and may return 201 on the first run or 200 subsequently. Tests check expected status and request ID. Do not replace the demo collection's values with real credentials or publish real customer data.
-
-Postman collection import and execution have not been verified in this environment; HTTP behavior is covered by the automated Python and Compose checks.
+Import [the local collection](../postman/RelayDesk.postman_collection.json) and run it in order. It checks health, readiness, unauthorized requests, a fresh order and its replay, tenant visibility, malformed JSON, and request IDs. Each collection run creates one new synthetic order. See the [Postman investigation workflow](postman-workflow.md) for setup, expected results, limitations and CI verification. Desktop Postman import has not been verified here. Do not replace demo values with real credentials or publish real customer data.
 
