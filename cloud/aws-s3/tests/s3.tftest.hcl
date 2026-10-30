@@ -27,7 +27,7 @@ run "private_bucket_configuration" {
     error_message = "All four public access blocking settings must be enabled."
   }
   assert {
-    condition     = aws_s3_bucket_server_side_encryption_configuration.lab.rule[0].apply_server_side_encryption_by_default[0].sse_algorithm == "AES256"
+    condition     = one(one(aws_s3_bucket_server_side_encryption_configuration.lab.rule).apply_server_side_encryption_by_default).sse_algorithm == "AES256"
     error_message = "The synthetic bucket must use SSE-S3 encryption."
   }
 }
