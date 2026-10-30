@@ -18,4 +18,4 @@ When you are ready to start, the [Windows first-incident guide](windows-first-in
 
 ## Current build status
 
-The foundation and multiple local incidents are implemented and verified in CI. The full Docker setup has not been checked on the learner's computer, and AWS remains an undeployed scaffold. The learner has chosen to defer practice while the project is being built; no learner investigation has been completed or scored.
+The local lab v1 is implemented; see the [acceptance record](project-acceptance.md) for verification and precise boundaries. The full Docker setup has not been checked on the learner's computer, and AWS remains an undeployed scaffold. The learner has deferred practice; no learner investigation has been completed or scored.

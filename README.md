@@ -4,6 +4,8 @@
 
 [Architecture](docs/architecture.md) · [Incident catalogue](incidents/README.md) · [Run locally](#run-locally) · [CI workflows](#verification) · [Career roadmap](docs/roadmap.md)
 
+For a concise review of what is complete, what passed and what remains outside the local project, see the [v1 acceptance record](docs/project-acceptance.md).
+
 New to the lab on Windows? Start with the [first investigation](docs/windows-first-incident.md) when ready. It does not require Docker or a virtual machine.
 
 RelayDesk accepts synthetic customer orders, stores them in PostgreSQL and delivers signed webhooks to a mock partner. Its failure scenarios are built for evidence-driven support work: reproduce the complaint, compare hypotheses, inspect logs and metrics, identify a cause, validate recovery and write an appropriate customer update.
@@ -71,6 +73,8 @@ The second request deliberately demonstrates a 401; the third uses the public sy
 ## Verification
 
 GitHub Actions runs [API tests](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/tests.yml), [PostgreSQL integration](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/integration.yml), [Docker Compose end-to-end](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/compose.yml), [OAuth](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/oauth.yml), [Postman collections](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/postman.yml), [Windows foundation checks](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/windows.yml), [Linux service checks](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/linux-service.yml) and [Terraform static validation](https://github.com/kinz0042/cloud-support-engineering-lab/actions/workflows/terraform.yml). Open individual runs for their exact revision and scope; tests can be skipped when optional dependencies are absent.
+
+Run `python scripts/check_doc_links.py` to check repository-relative Markdown targets and supported heading links offline. It does not check external websites or every Markdown syntax variant; CI runs the same check on documentation changes.
 
 The Compose suite uses a disposable database, injects failures and checks recovery. The Linux CI exercise uses uniquely named transient units on a disposable runner. Terraform validation does not deploy or test AWS resources. See the [incident catalogue](incidents/README.md) for completed automated checks and unfinished investigations.
 
