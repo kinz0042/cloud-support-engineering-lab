@@ -22,7 +22,7 @@ try {
     # The fixed port mirrors the documented first exercise. Never stop a different process.
     $listener = Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue
     if ($listener) { throw 'Port 8080 is occupied on the CI runner.' }
-    $python = (Get-Command python -CommandType Application).Source
+    $python = Get-Command python -CommandType Application | Select-Object -First 1 -ExpandProperty Source
     $server = Start-Process -FilePath $python -ArgumentList 'app/server.py' -PassThru -NoNewWindow `
         -RedirectStandardOutput (Join-Path $work 'server.out') `
         -RedirectStandardError (Join-Path $work 'server.err')
