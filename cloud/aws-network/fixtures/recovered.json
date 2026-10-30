@@ -1,0 +1,52 @@
+{
+  "SecurityGroups": [
+    {
+      "GroupId": "sg-00000000000000001",
+      "GroupName": "synthetic-client",
+      "VpcId": "vpc-00000000000000001",
+      "IpPermissions": [],
+      "IpPermissionsEgress": [
+        {
+          "IpProtocol": "tcp",
+          "FromPort": 8081,
+          "ToPort": 8081,
+          "UserIdGroupPairs": [{"GroupId": "sg-00000000000000002"}],
+          "IpRanges": [],
+          "PrefixListIds": []
+        }
+      ]
+    },
+    {
+      "GroupId": "sg-00000000000000002",
+      "GroupName": "synthetic-service",
+      "VpcId": "vpc-00000000000000001",
+      "IpPermissions": [
+        {
+          "IpProtocol": "tcp",
+          "FromPort": 8081,
+          "ToPort": 8081,
+          "UserIdGroupPairs": [{"GroupId": "sg-00000000000000001"}],
+          "IpRanges": [],
+          "PrefixListIds": []
+        }
+      ],
+      "IpPermissionsEgress": []
+    },
+    {
+      "GroupId": "sg-00000000000000003",
+      "GroupName": "synthetic-other-client",
+      "VpcId": "vpc-00000000000000001",
+      "IpPermissions": [],
+      "IpPermissionsEgress": [
+        {
+          "IpProtocol": "tcp",
+          "FromPort": 8081,
+          "ToPort": 8081,
+          "UserIdGroupPairs": [{"GroupId": "sg-00000000000000002"}],
+          "IpRanges": [],
+          "PrefixListIds": []
+        }
+      ]
+    }
+  ]
+}

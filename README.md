@@ -31,6 +31,7 @@ The API creates the order and delivery record in one transaction. The worker lea
 | Invalid or expired credentials | [Keycloak-issued token and JWT failure checks](incidents/oauth-verification.md) |
 | API and OAuth request failures | [Postman investigation workflow and executed collection checks](docs/postman-workflow.md) |
 | Linux service will not start or bind | [Configuration failure](incidents/INC-018/brief.md) and [port conflict](incidents/INC-019/brief.md) |
+| Private network connection is blocked | [Offline security-group investigation](incidents/INC-011/brief.md); AWS deployment pending |
 
 These are synthetic exercises. CI evidence proves that specified tests ran; it does not prove that the learner independently diagnosed the incidents. Each investigation has a [recording template](incidents/TEMPLATE.md) for actual evidence, competing hypotheses, root cause, validation and communication.
 
@@ -60,6 +61,7 @@ The second request deliberately demonstrates a 401; the third uses the public sy
 | [OAuth](docs/oauth.md) | Client credentials and JWT failure scenarios | Docker Compose; optional Keycloak profile |
 | [Linux services](docs/linux-service-lab.md) | systemd, journal, environment and listening-port investigations | Authorized Linux system with systemd and `sudo` |
 | [AWS sandbox design](cloud/aws-s3/README.md) | S3/IAM investigation scaffold | Terraform; real deployment has not been performed |
+| [AWS network design](cloud/aws-network/README.md) | Offline security-group evidence and Terraform scaffold | Python; Terraform for mock tests; no real deployment |
 
 ## Verification
 
