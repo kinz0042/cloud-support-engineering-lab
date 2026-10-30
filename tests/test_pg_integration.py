@@ -11,6 +11,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 from app.relay_api import make_server
+from app.pagination import encode_cursor
 from app import relay_store
 from app.partner import make_server as make_partner
 from app.worker import deliver
@@ -246,8 +247,11 @@ class PostgreSQLIntegration(unittest.TestCase):
         ids = [row['id'] for row in first['orders'] + last['orders']]
         self.assertEqual(len(set(ids)), 105)
         self.assertEqual(ids, sorted(ids, reverse=True))
-        status, orbit = self.call('/v1/orders?' + urlencode({'cursor': first['next_cursor']}), token='ci-orbit')
+        boundary = encode_cursor({'created_at': '2026-01-01T00:00:00+00:00',
+                                  'id': 'ffffffff-ffff-ffff-ffff-ffffffffffff'})
+        status, orbit = self.call('/v1/orders?' + urlencode({'cursor': boundary}), token='ci-orbit')
         self.assertEqual(status, 200)
+        self.assertEqual(len(orbit['orders']), 4)
         self.assertTrue(all(row['external_id'].startswith('page-orbit-') for row in orbit['orders']))
         self.assertFalse(set(ids) & {row['id'] for row in orbit['orders']})
 

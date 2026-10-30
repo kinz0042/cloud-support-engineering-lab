@@ -28,11 +28,14 @@ class FakeAPI(BaseHTTPRequestHandler):
             self.end_headers()
             return
         if self.server.mode == 'oversized':
-            data = b'x' * (256 * 1024 + 1)
             self.send_response(200)
-            self.send_header('Content-Length', str(len(data)))
+            self.send_header('Content-Length', str(256 * 1024 + 1))
             self.end_headers()
-            self.wfile.write(data)
+            return
+        if self.server.mode == 'oversized_without_length':
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'x' * (256 * 1024 + 1))
             return
         if self.server.mode == 'incomplete':
             data = b'{"orders":[],"next_cursor":null}'
@@ -103,9 +106,10 @@ class PagingClientTests(unittest.TestCase):
     def test_large_valid_page_is_supported_with_bounded_response(self):
         self.server.mode = 'large'
         self.assertEqual(collect(self.url, 'public-demo', limit=100), {'pages': 1, 'orders': 100})
-        self.server.mode = 'oversized'
-        with self.assertRaisesRegex(PaginationError, 'response limit'):
-            collect(self.url, 'public-demo', limit=100)
+        for mode in ('oversized', 'oversized_without_length'):
+            self.server.mode = mode
+            with self.subTest(mode=mode), self.assertRaisesRegex(PaginationError, 'response limit'):
+                collect(self.url, 'public-demo', limit=100)
 
     def test_truncated_response_is_not_treated_as_success(self):
         self.server.mode = 'incomplete'

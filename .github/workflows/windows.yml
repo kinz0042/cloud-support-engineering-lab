@@ -2,22 +2,32 @@ name: Windows foundation checks
 on:
   push:
     paths:
-      - 'app/server.py'
+      - 'app/**'
       - 'linux/status_service.py'
       - 'tests/test_linux_service.py'
       - 'scripts/triage.py'
       - 'scripts/windows-check.ps1'
       - 'scripts/windows-foundation-smoke.ps1'
+      - 'scripts/paginate_orders.py'
+      - 'tests/test_pagination.py'
+      - 'tests/test_paginate_orders.py'
+      - 'tests/test_relay_api.py'
+      - 'tests/test_oauth_gateway_pagination.py'
       - 'tests/test_triage.py'
       - '.github/workflows/windows.yml'
   pull_request:
     paths:
-      - 'app/server.py'
+      - 'app/**'
       - 'linux/status_service.py'
       - 'tests/test_linux_service.py'
       - 'scripts/triage.py'
       - 'scripts/windows-check.ps1'
       - 'scripts/windows-foundation-smoke.ps1'
+      - 'scripts/paginate_orders.py'
+      - 'tests/test_pagination.py'
+      - 'tests/test_paginate_orders.py'
+      - 'tests/test_relay_api.py'
+      - 'tests/test_oauth_gateway_pagination.py'
       - 'tests/test_triage.py'
       - '.github/workflows/windows.yml'
 concurrency:
@@ -49,4 +59,12 @@ jobs:
         run: .\scripts\windows-foundation-smoke.ps1
       - name: Check standalone status process behavior
         run: python -m unittest discover -s tests -p test_linux_service.py -v
+      - name: Check pagination parsing
+        run: python -m unittest discover -s tests -p test_pagination.py -v
+      - name: Check the local pagination client
+        run: python -m unittest discover -s tests -p test_paginate_orders.py -v
+      - name: Check paginated API behavior
+        run: python -m unittest discover -s tests -p test_relay_api.py -v
+      - name: Check OAuth gateway pagination behavior
+        run: python -m unittest discover -s tests -p test_oauth_gateway_pagination.py -v
 

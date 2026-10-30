@@ -33,11 +33,23 @@ python scripts/paginate_orders.py --tenant acme --limit 25
 python scripts/paginate_orders.py --tenant orbit --limit 25
 ```
 
-The read-only client follows cursors on the fixed loopback API and prints only counts, not tokens or response bodies. It stops on repeated cursors, duplicate order IDs, invalid responses, redirects or its page limit. Acme's total should cover the fixture; Orbit must not receive Acme orders. Compare the response request IDs and tenant-specific database evidence rather than assuming a customer has lost data. The client is a lab diagnostic, not a production synchronization tool.
+The read-only client follows cursors on the fixed loopback API and prints only counts, not tokens or response bodies. It uses the default public Compose demo keys; changing those keys requires a separate manual investigation. It stops on repeated cursors, duplicate order IDs, invalid responses, redirects or its page limit. Acme's total should cover the fixture; Orbit must not receive Acme orders. Compare the response request IDs and tenant-specific database evidence rather than assuming a customer has lost data. The client is a lab diagnostic, not a production synchronization tool.
 
 For Windows PowerShell use `curl.exe`; the SQL here-document above is Bash syntax. If needed, pass a PowerShell here-string to `docker compose exec -T db psql` instead. Do not blindly delete shared data; the inserted fixtures persist in the lab volume. `docker compose down` keeps that volume, while `down -v` removes it and all its data.
 
-For an existing lab volume, apply [migration 002](../db/migrations/002_orders_pagination_index.sql) after reviewing it. It adds the pagination index and is safe to repeat on the disposable lab. It is an ordinary index build and can block writes; do not run it on a real database without a separately reviewed deployment plan. Correct pagination does not depend on the index existing.
+For an existing **disposable lab volume**, review [migration 002](../db/migrations/002_orders_pagination_index.sql), then run the following from the repository root in Bash:
+
+```bash
+docker compose exec -T db psql -v ON_ERROR_STOP=1 -U lab -d relaydesk < db/migrations/002_orders_pagination_index.sql
+```
+
+In Windows PowerShell, use:
+
+```powershell
+Get-Content -Raw .\db\migrations\002_orders_pagination_index.sql | docker compose exec -T db psql -v ON_ERROR_STOP=1 -U lab -d relaydesk
+```
+
+The migration adds the pagination index and is safe to repeat on the disposable lab. It is an ordinary index build and can block writes; do not run it on a real database without a separately reviewed deployment plan. Correct pagination does not depend on the index existing. The PowerShell migration command has not been verified on the learner's laptop.
 
 ## Support workflow
 

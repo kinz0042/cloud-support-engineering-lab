@@ -10,6 +10,7 @@ from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from app.relay_api import make_server
+from app.pagination import encode_cursor
 from app.partner import make_server as make_partner
 from app.worker import deliver
 from app.relay_store import UnknownOrder, CallbackConflict, StoreQueryCanceled
@@ -136,9 +137,13 @@ class RelayTests(unittest.TestCase):
         ids = [row["id"] for row in first["orders"] + last["orders"]]
         self.assertEqual(len(set(ids)), 105)
         self.assertEqual(collect(self.url + '/v1/orders', 'acme-key', limit=25), {'pages': 5, 'orders': 105})
-        status, _, orbit = self.call("/v1/orders?" + urlencode({"cursor": first["next_cursor"]}),
+        # A forged high boundary includes every Orbit fixture but must not expose Acme rows.
+        boundary = encode_cursor({"created_at": first["orders"][0]["created_at"],
+                                  "id": str(uuid.UUID(int=(1 << 128) - 1))})
+        status, _, orbit = self.call("/v1/orders?" + urlencode({"cursor": boundary}),
                                      headers={"Authorization": "Bearer orbit-key"})
         self.assertEqual(status, 200)
+        self.assertEqual(len(orbit["orders"]), 4)
         self.assertTrue(all(row["external_id"].startswith("orbit-page-") for row in orbit["orders"]))
         self.assertFalse(set(ids) & {row["id"] for row in orbit["orders"]})
 
