@@ -11,8 +11,8 @@
 | [INC-007](INC-007/brief.md) | JWT rejected | Verified in OAuth CI; learner investigation pending | Redacted claims, clock/issuer/audience/signature checks |
 | [INC-008](INC-008/brief.md) | Container cannot reach database | Diagnostic checks verified in CI; learner investigation pending | Network inspection and service-name resolution |
 | [INC-009](INC-009/brief.md) | DNS or TLS connection fails | DNS and TLS protocol mismatch verified in CI; learner investigation pending | Lookup, connection and certificate-chain evidence |
-| [INC-010](INC-010/brief.md) | IAM denies private S3 object access | Offline toy behavior verified in CI; AWS deployment and investigation pending | Caller identity, exact API, policy evaluation |
-| [INC-011](INC-011/brief.md) | Security group blocks application traffic | Offline synthetic snapshot; AWS deployment and investigation pending | Real flow/path tests and narrowly scoped rule change |
+| [INC-010](INC-010/brief.md) | IAM denies private S3 object access | Offline CI plus [live S3 policy exercise](../cloud/aws-s3/live-verification.md); learner investigation pending | Caller identity, exact API, policy evaluation |
+| [INC-011](INC-011/brief.md) | Security group blocks application traffic | Offline snapshot plus [live EC2 recovery](../cloud/aws-network/live-verification.md); learner investigation pending | Real flow/path tests and narrowly scoped rule change |
 | [INC-012](INC-012/brief.md) | Partner rate limits delivery | Recovery verified in CI; learner investigation pending | Retry-After, bounded retries, recovery test |
 | [INC-013](INC-013/brief.md) | Database readiness alert | Monitoring drill verified in CI; learner investigation pending | Gauge, alert state, logs and recovery evidence |
 | [INC-014](INC-014/brief.md) | OAuth client credentials rejected | Verified in OAuth CI; learner investigation pending | Token endpoint status and redacted configuration |

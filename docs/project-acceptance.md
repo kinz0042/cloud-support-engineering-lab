@@ -11,7 +11,7 @@ The local, synthetic RelayDesk lab is a complete, reviewable **v1 project**. Its
 | API authentication | [OAuth profile](oauth.md), local Keycloak and JWT gateway; API keys in the base profile | Local HTTP, simplified access model, no revocation checks |
 | Operations | [Observability](observability.md), logs, metrics, alert rules, SQL and [incident catalogue](../incidents/README.md) | No external alert delivery; investigations are synthetic |
 | Linux and network | [Linux services](linux-service-lab.md), [disk](linux-space-lab.md), [networking](networking.md) | Different exercises have different prerequisites and test scopes |
-| Cloud design | [S3/IAM scaffold](../cloud/aws-s3/README.md), [network scaffold](../cloud/aws-network/README.md) | Offline/static tests only; AWS resources have not been deployed |
+| Cloud design | [S3/IAM scaffold](../cloud/aws-s3/README.md), [network scaffold](../cloud/aws-network/README.md) | Terraform remains undeployed; separate [S3](../cloud/aws-s3/live-verification.md) and [EC2 network](../cloud/aws-network/live-verification.md) API exercises verified and cleaned up |
 | User and reviewer entry | [README](../README.md), [Windows guide](windows-first-incident.md), [readiness criteria](readiness.md) | Laptop and independent learner competence not verified |
 
 The architecture diagram in the README and [architecture notes](architecture.md) describe the implemented topology. A frontend is not needed to reproduce or investigate these API-first workflows. Postman collections provide an additional client; desktop import is not verified.
@@ -33,7 +33,7 @@ The documentation audit at this snapshot checked relative Markdown paths and hea
 
 ## Explicitly outside v1 acceptance
 
-- **Live AWS:** no AWS account, deployment, bill, IAM troubleshooting or teardown has been verified. A real cloud extension requires a user-owned account and an agreed cost boundary.
+- **Live AWS extension:** separate S3 object-policy and EC2 private-network recovery exercises now have linked evidence above. Both were cleaned up. The full RelayDesk application has not been deployed on AWS, the Terraform modules have not been applied, and actual billed credit usage remains unverified.
 - **Personal setup:** Docker, WSL, Windows compatibility, desktop Postman, power and connectivity on the learner's own computer remain unverified. Hosted Windows tests do not establish laptop compatibility.
 - **Professional evidence:** incidents are simulated; none is represented as a real customer's outage or the learner's independently completed investigation. The learner's explanations, assessments and interview performance have not been measured.
 - **Production operation:** no production TLS, secret management, comprehensive egress controls, total request deadlines, high availability, backups or external alerting. Do not expose the lab publicly.

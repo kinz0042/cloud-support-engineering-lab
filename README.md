@@ -34,8 +34,8 @@ The API creates the order and delivery record in one transaction. The worker lea
 | API and OAuth request failures | [Postman investigation workflow and executed collection checks](docs/postman-workflow.md) |
 | Linux service will not start or bind | [Configuration failure](incidents/INC-018/brief.md) and [port conflict](incidents/INC-019/brief.md) |
 | A Linux write fails with no space | [Isolated ENOSPC investigation](incidents/INC-020/brief.md) |
-| Private network connection is blocked | [Offline security-group investigation](incidents/INC-011/brief.md); AWS deployment pending |
-| Object access denied | [Offline object-access exercise](cloud/aws-s3/offline-exercise.md); actual S3 investigation pending |
+| Private network connection is blocked | [Live EC2 security-group recovery](cloud/aws-network/live-verification.md) |
+| Object access denied | [Live S3 access-denied recovery](cloud/aws-s3/live-verification.md) |
 | Integration sees only the first 100 orders | [Cursor pagination investigation](incidents/INC-021/brief.md) and [verification](incidents/INC-021/verification.md) |
 | Order submission stalls before reaching the database | [Incomplete HTTP request body and timeout investigation](incidents/INC-022/brief.md) |
 | Partner redirects a signed webhook | [Destination-bound delivery and safe recovery](incidents/INC-023/brief.md) |
@@ -67,8 +67,8 @@ The second request deliberately demonstrates a 401; the third uses the public sy
 | [Observability](docs/observability.md) | Queue and latency metrics, alerts and recovery | Docker Compose; optional Prometheus profile |
 | [OAuth](docs/oauth.md) | Client credentials and JWT failure scenarios | Docker Compose; optional Keycloak profile |
 | [Linux services](docs/linux-service-lab.md) | systemd, journal, environment and listening-port investigations | Authorized Linux system with systemd and `sudo` |
-| [AWS sandbox design](cloud/aws-s3/README.md) | S3/IAM investigation scaffold | Terraform; real deployment has not been performed |
-| [AWS network design](cloud/aws-network/README.md) | Offline security-group evidence and Terraform scaffold | Python; Terraform for mock tests; no real deployment |
+| [AWS sandbox design](cloud/aws-s3/README.md) | S3/IAM investigation scaffold | Terraform scaffold; separate live API exercise verified and cleaned up |
+| [AWS network design](cloud/aws-network/README.md) | Offline security-group evidence and Terraform scaffold | Python/Terraform scaffold; separate live EC2 exercise verified and cleaned up |
 
 ## Verification
 

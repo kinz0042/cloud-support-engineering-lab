@@ -1,6 +1,6 @@
 # AWS security-group investigation lab
 
-This is a **synthetic, offline-first** networking exercise. It includes saved example security-group responses, a read-only local inspector, and a Terraform scaffold for an optional future sandbox. It does not provision a VPC, EC2 instance, service, network interface or AWS account. No live AWS network behavior has been verified.
+This is a **synthetic, offline-first** networking exercise. It includes saved example security-group responses, a read-only local inspector, and a Terraform scaffold for an optional future sandbox. It does not provision a VPC, EC2 instance, service, network interface or AWS account. A separate [live EC2 network exercise](live-verification.md) has now verified timeout, scoped ingress recovery and cleanup; it used direct API calls, not this Terraform scaffold.
 
 ## The scenario
 
@@ -40,7 +40,7 @@ For live work, independently verify the account and region, the network-interfac
 
 The scaffold is **not a complete live incident environment**. Its narrow rules can disrupt access, including management connectivity, if assigned to real instances. Never attach them to a production or shared workload. Multiple attached security groups can also permit traffic independently, so a live negative control must check all attachments.
 
-Before any real deployment: select a user-authorized disposable account and VPC, region, spending limit and safe access/cleanup plan; understand EC2 and other charges; inspect the exact Terraform plan. Budget notifications are not a hard spending cap. Do not deploy until that decision is made. Terraform state may contain sensitive infrastructure identifiers and must stay private. No real deployment has been performed for this project.
+Before any real deployment: select a user-authorized disposable account and VPC, region, spending limit and safe access/cleanup plan; understand EC2 and other charges; inspect the exact Terraform plan. Budget notifications are not a hard spending cap. Do not deploy until that decision is made. Terraform state may contain sensitive infrastructure identifiers and must stay private. The Terraform scaffold itself remains undeployed; the separate live API exercise is documented above.
 
 The [Terraform test file](tests/security-groups.tftest.hcl) uses a mocked AWS provider and explicitly runs only `plan` operations. It checks the missing-ingress default, scoped fix and input validation without cloud credentials or AWS resources. `terraform init` still downloads the provider, and adding future tests with a real provider or `apply` could create infrastructure; inspect tests before running them. See [HashiCorp's mocking documentation](https://developer.hashicorp.com/terraform/language/tests/mocking).
 
