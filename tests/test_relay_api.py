@@ -5,13 +5,16 @@ import threading
 import unittest
 import uuid
 import time
+from datetime import datetime
 from urllib.error import HTTPError
+from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from app.relay_api import make_server
 from app.partner import make_server as make_partner
 from app.worker import deliver
 from app.relay_store import UnknownOrder, CallbackConflict, StoreQueryCanceled
 from app.request_metrics import RequestDurations
+from scripts.paginate_orders import collect
 from unittest.mock import patch
 
 
@@ -28,10 +31,17 @@ class FakeStore:
         return {"counts": {"pending": 3, "leased": 1, "delivered": 4, "dead": 2},
                 "oldest_due_seconds": 42.0}
 
-    def list_orders(self, tenant):
+    def list_orders(self, tenant, limit=100, cursor=None):
         if not self.available:
             raise RuntimeError("database down")
-        return [r for (owner, _), r in self.orders.items() if owner == tenant]
+        def ordering(row):
+            return datetime.fromisoformat(row["created_at"]), uuid.UUID(row["id"])
+        rows = sorted((r for (owner, _), r in self.orders.items() if owner == tenant),
+                      key=ordering, reverse=True)
+        if cursor:
+            boundary = cursor[0], uuid.UUID(cursor[1])
+            rows = [row for row in rows if ordering(row) < boundary]
+        return rows[:limit + 1]
 
     def create_order(self, tenant, external_id):
         if not self.available:
@@ -108,6 +118,45 @@ class RelayTests(unittest.TestCase):
         self.assertNotIn("database down", json.dumps(body))
         self.store.available = True
         self.assertEqual(self.call("/ready")[0], 200)
+
+    def test_pagination_retrieves_ties_and_preserves_tenant_scope(self):
+        for n in range(105):
+            self.store.create_order("acme", f"acme-page-{n}")
+        for n in range(4):
+            self.store.create_order("orbit", f"orbit-page-{n}")
+        auth = {"Authorization": "Bearer acme-key"}
+        status, _, first = self.call("/v1/orders", headers=auth)
+        self.assertEqual(status, 200)
+        self.assertEqual(len(first["orders"]), 100)
+        self.assertTrue(first["next_cursor"])
+        status, _, last = self.call("/v1/orders?" + urlencode({"cursor": first["next_cursor"]}), headers=auth)
+        self.assertEqual(status, 200)
+        self.assertEqual(len(last["orders"]), 5)
+        self.assertIsNone(last["next_cursor"])
+        ids = [row["id"] for row in first["orders"] + last["orders"]]
+        self.assertEqual(len(set(ids)), 105)
+        self.assertEqual(collect(self.url + '/v1/orders', 'acme-key', limit=25), {'pages': 5, 'orders': 105})
+        status, _, orbit = self.call("/v1/orders?" + urlencode({"cursor": first["next_cursor"]}),
+                                     headers={"Authorization": "Bearer orbit-key"})
+        self.assertEqual(status, 200)
+        self.assertTrue(all(row["external_id"].startswith("orbit-page-") for row in orbit["orders"]))
+        self.assertFalse(set(ids) & {row["id"] for row in orbit["orders"]})
+
+    def test_invalid_pagination_does_not_reach_store_or_bypass_auth(self):
+        auth = {"Authorization": "Bearer acme-key"}
+        paths = ("/v1/orders?limit=0", "/v1/orders?limit=101", "/v1/orders?limit=1&limit=2",
+                 "/v1/orders?cursor=", "/v1/orders?cursor=bad!", "/v1/orders?unexpected=1")
+        with patch.object(self.store, "list_orders", wraps=self.store.list_orders) as list_orders:
+            for path in paths:
+                with self.subTest(path=path):
+                    status, _, body = self.call(path, headers=auth)
+                    self.assertEqual((status, body["error"]), (400, "invalid_pagination"))
+            list_orders.assert_not_called()
+        self.assertEqual(self.call("/v1/orders?limit=0")[0], 401)
+        with self.assertLogs('relaydesk', level='INFO') as logs:
+            self.assertEqual(self.call('/v1/orders?cursor=private-cursor-marker', headers=auth)[0], 400)
+        self.assertNotIn('private-cursor-marker', ' '.join(logs.output))
+        self.assertNotIn('acme-key', ' '.join(logs.output))
 
     def test_metrics_report_database_readiness_without_secrets(self):
         self.call("/v1/orders", headers={"Authorization": "Bearer acme-key"})

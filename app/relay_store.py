@@ -62,14 +62,21 @@ def delivery_metrics():
             "oldest_due_seconds": max(0.0, float(row["oldest_due"]))}
 
 
-def list_orders(tenant):
+def list_orders(tenant, limit=100, cursor=None):
+    """Return one extra row to let the API determine whether another page exists."""
     try:
         with _connect() as conn:
             conn.execute("SET TRANSACTION READ ONLY")
             conn.execute("SET LOCAL statement_timeout = '2s'")
+            if cursor is None:
+                return conn.execute(
+                    "SELECT id::text, external_id, status, created_at::text FROM orders "
+                    "WHERE tenant_id = %s ORDER BY created_at DESC, id DESC LIMIT %s", (tenant, limit + 1)
+                ).fetchall()
             return conn.execute(
                 "SELECT id::text, external_id, status, created_at::text FROM orders "
-                "WHERE tenant_id = %s ORDER BY created_at DESC LIMIT 100", (tenant,)
+                "WHERE tenant_id = %s AND (created_at, id) < (%s, %s::uuid) "
+                "ORDER BY created_at DESC, id DESC LIMIT %s", (tenant, cursor[0], cursor[1], limit + 1)
             ).fetchall()
     except Exception as exc:
         # SQLSTATE 57014 also includes explicit cancellation. Do not claim every

@@ -8,7 +8,7 @@ CREATE TABLE orders (
     created_at timestamptz NOT NULL DEFAULT now(),
     UNIQUE (tenant_id, external_id)
 );
-CREATE INDEX orders_tenant_created_idx ON orders (tenant_id, created_at DESC);
+CREATE INDEX orders_tenant_created_id_idx ON orders (tenant_id, created_at DESC, id DESC);
 CREATE TABLE deliveries (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     order_id uuid NOT NULL UNIQUE REFERENCES orders(id),

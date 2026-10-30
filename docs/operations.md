@@ -4,6 +4,8 @@ Prerequisites: Docker Engine with Compose; about 4 GB free RAM recommended, not 
 
 If you retain a database from before the delivery-replay feature, apply the [additive schema migration](delivery-recovery.md#existing-database-upgrade) before starting the new worker.
 
+Existing disposable databases can add the pagination index with the repeatable `db/migrations/002_orders_pagination_index.sql` migration. A fresh volume receives it from `db/init.sql`. The index improves the keyset query; pagination correctness does not depend on it. Review the migration and its locking impact before any real deployment: this ordinary index build is intended for the disposable lab, not an unreviewed production migration.
+
 ```sh
 docker compose up -d --build
 docker compose ps

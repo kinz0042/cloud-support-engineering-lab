@@ -19,6 +19,7 @@ Each API collection run creates another synthetic order; existing lab data remai
 | Missing or incorrect API key | 401 | Compare the authorization header and affected tenant before changing credentials. |
 | Create, then replay | 201 with `created: true`; then 200 with `created: false` and the same order ID | Repeating the same external ID for the same tenant does not create a second order. |
 | Acme and Orbit visibility | Acme sees the new order; Orbit does not | A specific cross-tenant isolation check, not a complete security audit. |
+| First order page | At most one order and a `next_cursor` field | The collection checks the response shape; use the [pagination investigation](api-pagination.md) for full traversal. |
 | Invalid JSON | 400 with `invalid_request` | Inspect the body and content type before escalating a client error. |
 | OAuth token then gateway | Valid demo token returns 200 | A token being issued and the gateway accepting it are separate checks. |
 | Wrong client secret | Identity provider returns 401 | Failure is at token issuance, before the API call. |

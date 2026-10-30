@@ -326,6 +326,32 @@
           }
         }
       ]
+    },
+    {
+      "name": "Inspect the first order page",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/v1/orders?limit=1",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{acme_key}}"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Request ID returned\", function () { pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.ok; });",
+              "pm.test(\"Page and continuation field returned\", function () { var data = pm.response.json(); pm.expect(data.orders).to.be.an(\"array\"); pm.expect(data.orders.length).to.be.at.most(1); pm.expect(data).to.have.property(\"next_cursor\"); });"
+            ]
+          }
+        }
+      ]
     }
   ]
 }

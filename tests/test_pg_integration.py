@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
+from urllib.parse import urlencode
 import json
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -224,6 +225,50 @@ class PostgreSQLIntegration(unittest.TestCase):
         with self.assertRaises(relay_store.CallbackConflict):
             relay_store.record_callback("ci-event", other_order)
         self.assertFalse(relay_store.record_callback("ci-event", order_id))
+
+    def test_paginated_orders_with_equal_timestamps_and_tenant_isolation(self):
+        # Direct inserts are disposable test fixtures and intentionally skip the outbox.
+        with relay_store._connect() as conn:
+            conn.execute("INSERT INTO orders (id, tenant_id, external_id, created_at) "
+                         "SELECT gen_random_uuid(), 'acme', 'page-acme-' || n, "
+                         "TIMESTAMPTZ '2026-01-01 00:00:00+00' FROM generate_series(1, 105) n")
+            conn.execute("INSERT INTO orders (id, tenant_id, external_id, created_at) "
+                         "SELECT gen_random_uuid(), 'orbit', 'page-orbit-' || n, "
+                         "TIMESTAMPTZ '2026-01-01 00:00:00+00' FROM generate_series(1, 4) n")
+        status, first = self.call('/v1/orders', token='ci-acme')
+        self.assertEqual(status, 200)
+        self.assertEqual(len(first['orders']), 100)
+        self.assertTrue(first['next_cursor'])
+        status, last = self.call('/v1/orders?' + urlencode({'cursor': first['next_cursor']}), token='ci-acme')
+        self.assertEqual(status, 200)
+        self.assertEqual(len(last['orders']), 5)
+        self.assertIsNone(last['next_cursor'])
+        ids = [row['id'] for row in first['orders'] + last['orders']]
+        self.assertEqual(len(set(ids)), 105)
+        self.assertEqual(ids, sorted(ids, reverse=True))
+        status, orbit = self.call('/v1/orders?' + urlencode({'cursor': first['next_cursor']}), token='ci-orbit')
+        self.assertEqual(status, 200)
+        self.assertTrue(all(row['external_id'].startswith('page-orbit-') for row in orbit['orders']))
+        self.assertFalse(set(ids) & {row['id'] for row in orbit['orders']})
+
+    def test_pagination_index_migration_is_repeatable_and_preserves_orders(self):
+        relay_store.create_order('acme', 'index-migration-fixture')
+        with relay_store._connect() as conn:
+            conn.execute('DROP INDEX IF EXISTS orders_tenant_created_id_idx')
+        try:
+            migration = Path('db/migrations/002_orders_pagination_index.sql').read_text()
+            for _ in range(2):
+                with relay_store._connect() as conn:
+                    conn.execute(migration)
+            with relay_store._connect() as conn:
+                index = conn.execute("SELECT to_regclass('orders_tenant_created_id_idx') AS name").fetchone()
+                count = conn.execute("SELECT count(*) AS n FROM orders WHERE external_id=%s",
+                                     ('index-migration-fixture',)).fetchone()
+            self.assertIsNotNone(index['name'])
+            self.assertEqual(count['n'], 1)
+        finally:
+            with relay_store._connect() as conn:
+                conn.execute('CREATE INDEX IF NOT EXISTS orders_tenant_created_id_idx ON orders (tenant_id, created_at DESC, id DESC)')
 
 
 

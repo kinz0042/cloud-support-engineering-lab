@@ -13,6 +13,7 @@ from urllib.parse import urlsplit
 
 from . import relay_store as store
 from .request_metrics import RequestDurations
+from .pagination import encode_cursor, parse_page_query
 
 LOG = logging.getLogger("relaydesk")
 MAX_BODY = 4096
@@ -60,7 +61,11 @@ class Handler(BaseHTTPRequestHandler):
     def handle_request(self):
         self.started_at = self.server.clock()
         request_id = str(uuid.uuid4())
-        path = urlsplit(self.path).path
+        try:
+            target = urlsplit(self.path)
+        except ValueError:
+            return self.reply(400, {"error": "invalid_request"}, request_id, "unmatched", "invalid_target")
+        path = target.path
         route = path if path in ("/health", "/ready", "/metrics", "/v1/orders", "/v1/callbacks") else "unmatched"
         if self.command == "GET" and path == "/metrics":
             with self.server.metrics_lock:
@@ -134,6 +139,11 @@ class Handler(BaseHTTPRequestHandler):
         tenant = tenant_for(self.headers.get("Authorization", ""), self.server.tenant_keys)
         if tenant is None:
             return self.reply(401, {"error": "unauthorized"}, request_id, route, "invalid_credential")
+        if self.command == "GET":
+            try:
+                limit, cursor = parse_page_query(target.query)
+            except ValueError:
+                return self.reply(400, {"error": "invalid_pagination"}, request_id, route, "invalid_pagination")
         if self.command == "POST":
             try:
                 _, body = self.body_json()
@@ -144,7 +154,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(400, {"error": "invalid_request"}, request_id, route, "bad_body")
         try:
             if self.command == "GET":
-                result, created = self.server.store.list_orders(tenant), False
+                result, created = self.server.store.list_orders(tenant, limit, cursor), False
             else:
                 result, created = self.server.store.create_order(tenant, external_id)
         except store.StoreQueryCanceled:
@@ -153,7 +163,9 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             return self.reply(503, {"error": "dependency_unavailable"}, request_id, route, "database_unavailable")
         if self.command == "GET":
-            return self.reply(200, {"orders": result}, request_id, route, "listed")
+            page = result[:limit]
+            next_cursor = encode_cursor(page[-1]) if len(result) > limit else None
+            return self.reply(200, {"orders": page, "next_cursor": next_cursor}, request_id, route, "listed")
         return self.reply(201 if created else 200, {"order": result, "created": created},
                           request_id, route, "created" if created else "idempotent_replay")
 

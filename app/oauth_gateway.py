@@ -5,9 +5,11 @@ import os
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 LOG = logging.getLogger('relaydesk.oauth')
+MAX_UPSTREAM_BODY = 256 * 1024
 
 
 class AuthInvalid(Exception):
@@ -56,7 +58,11 @@ class Handler(BaseHTTPRequestHandler):
 
     def handle_request(self):
         request_id = str(uuid.uuid4())
-        if self.path != '/v1/orders' or self.command not in ('GET', 'POST'):
+        try:
+            target = urlsplit(self.path)
+        except ValueError:
+            return self.reply(400, 'invalid_request', request_id, 'invalid_target')
+        if target.scheme or target.netloc or target.fragment or target.path != '/v1/orders' or self.command not in ('GET', 'POST'):
             return self.reply(404, 'not_found', request_id, 'unknown_route')
         auth = self.headers.get('Authorization', '')
         if not auth.startswith('Bearer ') or len(auth) > 10000:
@@ -70,13 +76,17 @@ class Handler(BaseHTTPRequestHandler):
         tenant = claims.get('tenant_id')
         if not isinstance(tenant, str) or tenant not in self.server.tenant_keys:
             return self.reply(403, 'forbidden', request_id, 'unmapped_tenant')
+        if len(target.query) > 512:
+            error = 'invalid_pagination' if self.command == 'GET' else 'invalid_request'
+            return self.reply(400, error, request_id, 'query_too_long')
         data = None
         if self.command == 'POST':
             length = self.headers.get('Content-Length', '')
             if not length.isascii() or not length.isdigit() or len(length) > 5 or int(length) < 1 or int(length) > 4096:
                 return self.reply(400, 'invalid_request', request_id, 'bad_body')
             data = self.rfile.read(int(length))
-        req = Request('http://api:8081/v1/orders', method=self.command, data=data,
+        upstream_url = 'http://api:8081/v1/orders' + ('?' + target.query if target.query else '')
+        req = Request(upstream_url, method=self.command, data=data,
                       headers={'Authorization': 'Bearer ' + self.server.tenant_keys[tenant],
                                'Content-Type': 'application/json'})
         try:
@@ -86,8 +96,8 @@ class Handler(BaseHTTPRequestHandler):
         except (URLError, TimeoutError):
             return self.reply(503, 'upstream_unavailable', request_id, 'upstream_unavailable')
         with response:
-            payload = response.read(65537)
-            if len(payload) > 65536:
+            payload = response.read(MAX_UPSTREAM_BODY + 1)
+            if len(payload) > MAX_UPSTREAM_BODY:
                 return self.reply(502, 'upstream_response_too_large', request_id, 'upstream_error')
             status, upstream_id = response.status, response.headers.get('X-Request-ID', '')
         LOG.info(json.dumps({'event': 'oauth_request', 'request_id': request_id, 'status': status,

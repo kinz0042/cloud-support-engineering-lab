@@ -16,10 +16,10 @@ def token(client, secret=None):
         return json.load(response)['access_token']
 
 
-def order_request(access_token=None):
+def order_request(access_token=None, query=''):
     headers = {} if access_token is None else {'Authorization': 'Bearer ' + access_token}
     try:
-        response = urlopen(Request(gateway, headers=headers), timeout=5)
+        response = urlopen(Request(gateway + query, headers=headers), timeout=5)
     except HTTPError as error:
         response = error
     with response:
@@ -39,6 +39,12 @@ while True:
 status, result = order_request(acme)
 assert status == 200, (status, result)
 assert len(result['orders']) >= 1, 'Expected an Acme fixture order from the previous smoke test'
+status, first_page = order_request(acme, '?limit=1')
+assert status == 200 and len(first_page['orders']) == 1 and first_page['next_cursor'], 'Expected a second Acme page'
+status, second_page = order_request(acme, '?' + urlencode({'limit': 1, 'cursor': first_page['next_cursor']}))
+assert status == 200 and len(second_page['orders']) == 1
+assert first_page['orders'][0]['id'] != second_page['orders'][0]['id']
+assert order_request(acme, '?limit=0')[0] == 400
 status, result = order_request(token('orbit-client'))
 assert status == 200 and result['orders'] == [], (status, result)
 assert order_request()[0] == 401
@@ -53,4 +59,4 @@ except HTTPError as exc:
 # The fixture realm deliberately issues 20-second tokens.
 time.sleep(23)
 assert order_request(acme)[0] == 401, 'Expired JWT was accepted'
-print('OAuth client credentials, tenant isolation, wrong secret/audience, malformed and expired tokens verified')
+print('OAuth client credentials, pagination, tenant isolation, wrong secret/audience, malformed and expired tokens verified')
