@@ -1,0 +1,33 @@
+name: Linux service investigations
+on:
+  push:
+    paths:
+      - 'linux/**'
+      - 'scripts/systemd_smoke.py'
+      - 'tests/test_linux_service.py'
+      - '.github/workflows/linux-service.yml'
+  pull_request:
+    paths:
+      - 'linux/**'
+      - 'scripts/systemd_smoke.py'
+      - 'tests/test_linux_service.py'
+      - '.github/workflows/linux-service.yml'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  service:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check prerequisites
+        run: |
+          test "$(ps -p 1 -o comm= | tr -d ' ')" = systemd
+          sudo -n true
+      - name: Test service behavior over local HTTP
+        run: python3 -m unittest discover -s tests -p test_linux_service.py -v
+      - name: Investigate and recover transient systemd services
+        run: python3 scripts/systemd_smoke.py
