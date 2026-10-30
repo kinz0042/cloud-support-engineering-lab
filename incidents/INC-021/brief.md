@@ -26,3 +26,5 @@ Pagination does not guarantee a snapshot or solve concurrent-write reconciliatio
 **Engineering handoff:** include time range, tenant-safe identifier, endpoint, response status, request IDs, page size, whether a continuation was present, reconciliation evidence, affected client behavior, verified fix and remaining concurrency concerns. Redact credentials and customer records.
 
 **Prevention:** document the paging contract and test traversal, ties, malformed cursors and tenant isolation. Use [the incident template](../TEMPLATE.md) to record your own actions and any assistance.
+
+See [automated verification](verification.md) for exact CI revisions, checks and limitations. No learner investigation has been certified complete.

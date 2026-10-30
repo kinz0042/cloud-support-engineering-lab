@@ -1,0 +1,11 @@
+# INC-021 verification
+
+These are automated checks of a synthetic lab, not a learner's independent investigation or production experience. The source revision and scope of each run are explicit below.
+
+- [PostgreSQL integration](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41027343470), commit `44e061b382a1404643c49db51c3ff0a51a6a379d`: all 107 tests passed with real PostgreSQL. Pagination coverage inserted 105 same-timestamp Acme fixtures and four Orbit fixtures, followed the default 100-row page to the remaining five without duplicate IDs, and verified a forged high cursor still returned only Orbit's four records under Orbit's credential. The additive index migration was applied twice in a disposable test database without losing the fixture.
+- [OAuth end-to-end](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41026525514), commit `ed42c02a99ecaa19611cc5b818e279b75dd54a6b`: the Keycloak-backed gateway passed two distinct one-row Acme pages and an invalid-limit control along with its other authentication checks.
+- [Postman collections](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41026525509), commit `ed42c02a99ecaa19611cc5b818e279b75dd54a6b`: Newman ran 12 API requests with 30 assertions and eight OAuth requests with 16 assertions. The pagination request checks the first-page response shape; it does not itself traverse all pages.
+- [Full Compose regression](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41026525591), commit `ed42c02a99ecaa19611cc5b818e279b75dd54a6b`: application, webhook, SQL, monitoring, database recovery and lock-induced latency checks passed.
+- [Windows runner](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41027343510), commit `44e061b382a1404643c49db51c3ff0a51a6a379d`: pagination parsing, client, fake-store API and gateway tests passed on Windows Server 2025. This does not verify Docker, Postman desktop, WSL or the learner's laptop.
+
+The runs use disposable, static fixtures. They do not prove point-in-time snapshot behavior under concurrent changes or real customer data completeness. The cursor is unsigned and unencrypted; authorization still comes from the tenant credential. The migration is an ordinary index build; production deployment requires a separate locking and change review.

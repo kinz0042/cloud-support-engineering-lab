@@ -34,7 +34,7 @@ The API creates the order and delivery record in one transaction. The worker lea
 | A Linux write fails with no space | [Isolated ENOSPC investigation](incidents/INC-020/brief.md) |
 | Private network connection is blocked | [Offline security-group investigation](incidents/INC-011/brief.md); AWS deployment pending |
 | Object access denied | [Offline object-access exercise](cloud/aws-s3/offline-exercise.md); actual S3 investigation pending |
-| Integration sees only the first 100 orders | [Cursor pagination investigation](incidents/INC-021/brief.md) |
+| Integration sees only the first 100 orders | [Cursor pagination investigation](incidents/INC-021/brief.md) and [verification](incidents/INC-021/verification.md) |
 
 These are synthetic exercises. CI evidence proves that specified tests ran; it does not prove that the learner independently diagnosed the incidents. Each investigation has a [recording template](incidents/TEMPLATE.md) for actual evidence, competing hypotheses, root cause, validation and communication.
 
