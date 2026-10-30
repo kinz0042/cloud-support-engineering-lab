@@ -27,6 +27,7 @@ The API creates the order and delivery record in one transaction. The worker lea
 | API healthy while deliveries stop | [Queue telemetry and stopped-worker recovery](incidents/INC-016/verification.md) |
 | Slow reads despite healthy readiness | [PostgreSQL lock waits, request timing and alert recovery](incidents/INC-017/verification.md) |
 | Invalid or expired credentials | [Keycloak-issued token and JWT failure checks](incidents/oauth-verification.md) |
+| API and OAuth request failures | [Postman investigation workflow and executed collection checks](docs/postman-workflow.md) |
 | Linux service will not start or bind | [Configuration failure](incidents/INC-018/brief.md) and [port conflict](incidents/INC-019/brief.md) |
 
 These are synthetic exercises. CI evidence proves that specified tests ran; it does not prove that the learner independently diagnosed the incidents. Each investigation has a [recording template](incidents/TEMPLATE.md) for actual evidence, competing hypotheses, root cause, validation and communication.
