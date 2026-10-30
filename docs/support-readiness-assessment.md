@@ -48,3 +48,5 @@ Target 13/16 with no zero in evidence, root cause or validation. This is a pract
 - What I would do differently:
 
 Do not publish secrets, customer data, or an AI-generated investigation as your own work.
+
+For three additional timed scenarios and a separate reviewer guide, see [mock interviews](mock-interviews.md). These are synthetic written exercises; they do not replace a hands-on investigation.
