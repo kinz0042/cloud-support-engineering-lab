@@ -44,8 +44,6 @@ class LinuxServiceTests(unittest.TestCase):
 
     def test_conflicting_listener_is_reported_without_printing_environment(self):
         with socket.socket() as incumbent:
-            if hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
-                incumbent.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
             incumbent.bind(("127.0.0.1", 0))
             incumbent.listen()
             port = incumbent.getsockname()[1]
@@ -55,7 +53,7 @@ class LinuxServiceTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         event = json.loads(result.stdout)
         self.assertEqual(event["event"], "listen_failed")
-        self.assertTrue(event["address_in_use"])
+        self.assertTrue(event["address_in_use"], msg=json.dumps(event))
         self.assertNotIn("do-not-print-this-secret", result.stdout + result.stderr)
 
     def test_healthy_service_and_graceful_termination(self):

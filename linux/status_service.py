@@ -44,6 +44,12 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
 
+class LabHTTPServer(ThreadingHTTPServer):
+    # Windows SO_REUSEADDR can permit a second listener and obscure a conflict.
+    # Linux keeps reuse enabled for the stop/restart service exercise.
+    allow_reuse_address = os.name != "nt"
+
+
 def main():
     settings, error = configuration(os.environ)
     if error:
@@ -51,7 +57,7 @@ def main():
         return 2
     instance, port = settings
     try:
-        server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+        server = LabHTTPServer(("127.0.0.1", port), Handler)
     except OSError as exc:
         # Winsock reports WSAEADDRINUSE as 10048; Linux uses EADDRINUSE.
         occupied = exc.errno in (errno.EADDRINUSE, 10048) or getattr(exc, "winerror", None) == 10048
