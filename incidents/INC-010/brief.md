@@ -10,6 +10,8 @@ The [offline exercise](../../cloud/aws-s3/offline-exercise.md) starts a syntheti
 
 For the supplied toy fixture, the report is denied because it is outside its allowed prefixes and exact-key list. The recovered fixture adds the report key while unrelated and private objects remain denied. This is a controlled explanation for the toy fixture, not a conclusion about a real S3 error.
 
+The local toy checks passed in the [PostgreSQL-backed CI suite](https://github.com/kinz0042/cloud-support-engineering-lab/actions/runs/41024286687); live AWS and learner validation remain pending.
+
 ## Real AWS investigation design
 
 The planned environment is a disposable S3 bucket with public access blocked and an example IAM policy that allows reads only under `allowed/`. Investigate a request for an object outside that prefix. Confirm the caller identity, exact bucket/key, API action, time, error and request ID before comparing identity and resource policies. Check for explicit denies, permission boundaries, organization policies and any encryption-key permissions relevant to the real environment.
